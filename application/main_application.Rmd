@@ -1,0 +1,473 @@
+
+R code for the application
+
+```{r}
+
+require(dataRetrieval)
+require(httr)
+library(ggplot2)
+library(evd)   
+library(dplyr)
+library(patchwork)  
+
+```
+
+Data : peak flow datasets from the UK, provided by the National River Flow Archive available on "https://nrfa.ceh.ac.uk/data/peak-flow-dataset"
+
+NB : we use the Version 13 of the dataset, ie until 2023
+
+```{r}
+
+load("NRFA_flow_dataset.Rdata")
+
+```
+
+Stations : 69028 (PILFs = 5), 71011 (PILFs = 2), 52011 (PILFs = 2), 50014 (PILFs = 5), 10001 (PILFs = 2)
+
+```{r}
+
+sts_j <- 69028
+klow <- 5
+
+d <- winfapReader::get_amax(sts_j)
+
+data <- d$Flow
+
+data_noPILFs <- data[!data %in% head(sort(data), klow)]
+```
+
+```{r}
+
+set.seed(sts_j)
+
+# computation of the different GEV parameters
+
+# MDPDE (minimization of H_\alpha)
+
+H_alpha <- function(data,par,alpha) {
+  
+  cste <- (1/par[2]^alpha)*(1/(1+alpha))^(alpha*(1+par[3])+1)*gamma((alpha*(1+par[3])+1))
+  
+  sum <- (1+1/alpha)*mean(mev::dgev(data,par[1],par[2],par[3])^alpha)
+  
+  return(cste - sum)
+}
+
+# initial values (pwme)
+
+fit_pwme <- EnvStats::egevd(data,method = "pwme")
+  estimates_pwme <-c(fit_pwme$parameters[1],
+                     fit_pwme$parameters[2],
+                     max(-fit_pwme$parameters[3],-1))
+  
+ # fit mle on the whole dataset
+  
+fit_mle <- mev::fit.gev(data)
+param_mle <- fit_mle$estimate
+
+# fit mdpde alpha = 0.1
+
+fit_mdpde_01 <- optim(par = estimates_pwme, fn = H_alpha, data = data,
+          alpha = 0.1,method = "L-BFGS-B",lower = c(-Inf,0.0001,-5),upper = c(Inf,Inf,5),control=list(maxit=2000))
+
+param_mdpde01 <- fit_mdpde_01$par
+
+# fit mdpde alpha = 0.3
+
+fit_mdpde_03 <- optim(par = estimates_pwme, fn = H_alpha, data = data,
+          alpha = 0.3,method = "L-BFGS-B",lower = c(-Inf,0.0001,-5),upper = c(Inf,Inf,5),control=list(maxit=2000))
+
+param_mdpde03 <- fit_mdpde_03$par
+
+# fit mle on the dataset without the PILFs
+
+fit_mle_noPILFs <- mev::fit.gev(data_noPILFs)
+param_mle_noPILFs <- fit_mle_noPILFs$estimate
+
+# param list
+
+params_list <- list(
+  MLE         = param_mle,
+  MLE_noPILFs = param_mle_noPILFs,
+  MDPDE03   = param_mdpde03,
+  MDPDE01   = param_mdpde01
+  )
+```
+
+
+```{r}
+
+# computation wasserstein distance and comparison of the shape parameters
+
+# Wasserstein distance
+
+wasserstein_for_gev <- function(true_param,esti_param,p,tau) {
+  
+  true_mu <- true_param[1]
+  true_sig <- true_param[2]
+  true_xi <- true_param[3]
+  
+  esti_mu <- esti_param[1]
+  esti_sig <- esti_param[2]
+  esti_xi <- esti_param[3]
+  
+  u <- seq(tau,0.99,0.01)
+  
+  true_quantiles <- mev::qgev(u,true_mu,true_sig,true_xi)
+  esti_quantiles <- mev::qgev(u,esti_mu,esti_sig,esti_xi)
+  
+  wd <- ((1/length(u))*sum(abs(true_quantiles-esti_quantiles)^p))^(1/p)
+  
+  return(wd)
+}
+
+# wasserstein's distance w.r.t. MLE without PILFs (Table 2)
+
+wasserstein_list <- list(
+  MLE       = wasserstein_for_gev(params_list$MLE_noPILFs,params_list$MLE,2,0.01),
+  MDPDE01   = wasserstein_for_gev(params_list$MLE_noPILFs,params_list$MDPDE01,2,0.01),
+  MDPDE03   = wasserstein_for_gev(params_list$MLE_noPILFs,params_list$MDPDE03,2,0.01)
+  )
+
+
+# shape parameters (Table 3)
+
+shape_list <- list(
+  MLE_noPILFs = round(params_list$MLE_noPILFs[3],2),
+  MLE         = round(params_list$MLE[3],2),
+  MDPDE01     = round(params_list$MDPDE01[3],2),
+  MDPDE03     = round(params_list$MDPDE03[3],2)
+  )
+
+# (mu,sigma) parameters (Table 10)
+
+mu_list <- list(
+  MLE_noPILFs = round(params_list$MLE_noPILFs[1],2),
+  MLE         = round(params_list$MLE[1],2),
+  MDPDE01     = round(params_list$MDPDE01[1],2),
+  MDPDE03     = round(params_list$MDPDE03[1],2)
+  )
+
+sigma_list <- list(
+  MLE_noPILFs = round(params_list$MLE_noPILFs[2],2),
+  MLE         = round(params_list$MLE[2],2),
+  MDPDE01     = round(params_list$MDPDE01[2],2),
+  MDPDE03     = round(params_list$MDPDE03[2],2)
+  )
+
+# 100-years return level (Table 4)
+
+p <- 0.01
+
+sigma_list <- list(
+  MLE_noPILFs = round(params_list$MLE_noPILFs[1]-params_list$MLE_noPILFs[2]/params_list$MLE_noPILFs[3]*(1-(-log(1-p))^(-params_list$MLE_noPILFs[3])),2),
+  MLE         = round(params_list$MLE[1]-params_list$MLE[2]/params_list$MLE[3]*(1-(-log(1-p))^(-params_list$MLE[3])),2),
+  MDPDE01     = round(params_list$MDPDE01[1]-params_list$MDPDE01[2]/params_list$MDPDE01[3]*(1-(-log(1-p))^(-params_list$MDPDE01[3])),2),
+  MDPDE03     = round(params_list$MDPDE03[1]-params_list$MDPDE03[2]/params_list$MDPDE03[3]*(1-(-log(1-p))^(-params_list$MDPDE03[3])),2)
+  )
+
+```
+
+```{r}
+
+# Density plot (Figure 7)
+
+data_klow <- max(data[data %in% head(sort(data), klow)])
+
+  gev_density <- function(params, x) {
+    mev::dgev(x, loc = params[1], scale = params[2], shape = params[3])
+  }
+
+  
+x_seq <- seq(-1,1.3*max(data),0.1)
+  
+  
+  theoretical_df <- bind_rows(
+    data.frame(Method = "MLE",         Theoretical = gev_density(params_list$MLE,         x_seq),x=x_seq),
+    data.frame(Method = "MLE_noPILFs", Theoretical = gev_density(params_list$MLE_noPILFs, x_seq),x=x_seq),
+    data.frame(Method = "MDPDE03",     Theoretical = gev_density(params_list$MDPDE03,     x_seq),x=x_seq),
+    data.frame(Method = "MDPDE01",     Theoretical = gev_density(params_list$MDPDE01,     x_seq),x=x_seq)
+  )
+  
+data_df <- data.frame(obs = data)
+  
+plt <- ggplot(data_df, aes(x = obs)) +
+  geom_histogram(aes(y = ..density..), bins = 20, fill = "gray85", color = "black", alpha = 0.6) +
+  geom_line(data = theoretical_df, aes(x = x, y = Theoretical, color = Method),linewidth = 1) +
+    scale_color_manual(
+      values = c("MLE" = "#31123b",
+                 "MDPDE01" = "#62fa6b",
+                 "MDPDE03" = "#277f8e",
+                 "MLE_noPILFs" = "#1bd0d5"),
+      labels = c(
+        "MLE" = "MLE",
+        "MDPDE01" = TeX("MDPDE ($\\alpha = 0.1$)"),
+        "MDPDE03" = TeX("MDPDE ($\\alpha = 0.3$)"),
+        "MLE_noPILFs" = "MLE (no PILFs)"
+      ),
+      breaks=c("MLE","MDPDE01","MDPDE03","MLE_noPILFs"),
+      name = "Legend"
+    ) +
+  labs(
+    title = paste0(sts_j),
+    x = TeX("Peak flow ($m^3/s$)"),
+    y = ""
+  ) + 
+  geom_vline(xintercept = data_klow, linetype="dashed", 
+                color = "black", size=1) +
+  theme_minimal() +
+    theme(legend.position = "none",
+      #legend.position =c(.5, .5),
+          legend.title=element_text(size=30,face="bold"),
+          legend.text =element_text(size=28),
+          plot.title = element_text(hjust = 0.5,size = 30,),
+          legend.key.height = unit(1.5, "cm"))+
+    theme(
+      axis.title = element_text(size = 28),   
+      axis.text = element_text(size = 18)
+    )+
+  guides(
+  color = guide_legend(order = 1, ncol = 1,override.aes = list(size = 4, linewidth = 2), keywidth = 3),
+  fill  = guide_legend(order = 2, ncol = 1,override.aes = list(size = 4, linewidth = 2), keywidth = 3)
+)
+
+plt
+```
+
+
+```{r}
+ggsave(plot = plt,
+       filename = paste0("figures/density_",sts_j,".png"),
+       width = 1760 / 180,
+       height = 1060 / 180,
+       dpi = 180,
+       units = "in")
+```
+
+```{r}
+my_legend <- get_legend(plt)
+legend <- as_ggplot(my_legend)
+
+ggsave(plot = legend,
+       filename = "figures/legend_density.png",
+       width = 1760 / 180,
+       height = 1060 / 180,
+       dpi = 180,
+       units = "in")
+```
+
+```{r}
+### QQ-plots (Figure 8)
+
+# GEV quantile function
+
+gev_q <- function(params, p) {
+  mev::qgev(p, loc = params[1], scale = params[2], shape = params[3])
+}
+
+
+obs <- sort(data)
+n <- length(obs)
+p <- ppoints(n,a=0)
+
+obs_noPILFs <- sort(data_noPILFs)
+n_noPILFs <- length(obs_noPILFs)
+p_noPILFs <- ppoints(n_noPILFs,a=0)
+
+theoretical_df <- bind_rows(
+  data.frame(Method = "MLE",         Theoretical = gev_q(params_list$MLE,         p), Observed = obs),
+  data.frame(Method = "MLE_noPILFs", Theoretical = gev_q(params_list$MLE_noPILFs, p_noPILFs), Observed = obs_noPILFs),
+  data.frame(Method = "MDPDE03",     Theoretical = gev_q(params_list$MDPDE03,     p), Observed = obs),
+  data.frame(Method = "MDPDE01",     Theoretical = gev_q(params_list$MDPDE01,     p), Observed = obs)
+)
+
+plt <- ggplot(theoretical_df, aes(x = Theoretical, y = Observed, color = Method)) +
+  geom_point(size = 1.8, alpha = 0.9) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "gray40") +
+  scale_color_manual(
+      values = c("MLE" = "#31123b",
+                 "MDPDE01" = "#62fa6b",
+                 "MDPDE03" = "#277f8e",
+                 "MLE_noPILFs" = "#1bd0d5"),
+      labels = c(
+        "MLE" = "MLE",
+        "MDPDE01" = TeX("MDPDE ($\\alpha = 0.1$)"),
+        "MDPDE03" = TeX("MDPDE ($\\alpha = 0.3$)"),
+        "MLE_noPILFs" = "MLE (no PILFs)"
+      ),
+      breaks=c("MLE","MDPDE01","MDPDE03","MLE_noPILFs"),
+      name = "Legend"
+    ) +
+  labs(
+    title = paste0(sts_j),
+    x = TeX("Fitted quantiles ($m^3/s$)"),
+    y = TeX("Observed quantiles ($m^3/s$)")
+  ) +
+  theme_minimal() +
+    theme(legend.position = "none",
+      #legend.position =c(.5, .5),
+          legend.title=element_text(size=30,face="bold"),
+          legend.text =element_text(size=28),
+          plot.title = element_text(hjust = 0.5,size = 30),
+          legend.key.height = unit(1.5, "cm"))+
+    theme(
+      axis.title = element_text(size = 28),   
+      axis.text = element_text(size = 18)
+    )+
+  guides(
+  color = guide_legend(order = 1, ncol = 1,override.aes = list(size = 4, linewidth = 2), keywidth = 3),
+  fill  = guide_legend(order = 2, ncol = 1,override.aes = list(size = 4, linewidth = 2), keywidth = 3)
+)
+
+plt
+```
+
+```{r}
+ggsave(plot = plt,
+       filename = paste0("figures/qqplot_",sts_j,".png"),
+       width = 1760 / 180,
+       height = 1060 / 180,
+       dpi = 180,
+       units = "in")
+```
+
+```{r}
+my_legend <- get_legend(plt)
+legend <- as_ggplot(my_legend)
+
+ggsave(plot = legend,
+       filename = "figures/legend_qqplot.png",
+       width = 1760 / 180,
+       height = 1060 / 180,
+       dpi = 180,
+       units = "in")
+```
+
+```{r}
+
+# return curves (Figure 9)
+
+p_vals <- c(seq(0.01,0.98,length.out = 100),seq(0.98,0.99,length.out = 100))
+y_p <- -log(1-p_vals)
+
+z_p <- function(p,params){
+  params[1]-(params[2]/params[3])*(1-(-log(1-p))^(-params[3]))
+}
+
+return_df <- bind_rows(
+    data.frame(Method = "MLE",y_p = y_p,
+    z_p = z_p(p_vals,params_list$MLE)),
+    
+    data.frame(Method = "MLE_noPILFs",y_p = y_p,
+    z_p = z_p(p_vals,params_list$MLE_noPILFs)),
+    
+    data.frame(Method = "MDPDE03",y_p = y_p,
+    z_p = z_p(p_vals,params_list$MDPDE03)),
+    
+    data.frame(Method = "MDPDE01",y_p = y_p,
+    z_p = z_p(p_vals,params_list$MDPDE01))
+  )
+
+
+obs <- sort(data)
+n <- length(obs)
+p_emp <- ppoints(n,a=0)
+y_emp <- -log(p_emp)
+
+highlight <- rep("Normal", n)
+if (klow >0) highlight[1:klow] <- "PILF"
+
+
+emp_df <- data.frame(
+  ReturnPeriod = y_emp,
+  ReturnLevel = obs,
+  Type = factor(highlight, levels = c("PILF", "Normal"))
+)
+
+
+obs_noPILFs <- sort(data_noPILFs)
+n_noPILFs <- length(obs_noPILFs)
+p_noPILFs <- ppoints(n_noPILFs,a=0)
+y_emp_noPILFs <- -log(p_noPILFs)
+
+emp_df_noPILFs <- data.frame(
+  ReturnPeriod = y_emp_noPILFs,
+  ReturnLevel = obs_noPILFs,
+  Type = rep("noPILF",n_noPILFs))
+
+plt <- ggplot() +
+  geom_line(data = return_df, aes(x = -log(y_p), y = z_p, color = Method),size = 1) +
+  geom_point(data = emp_df, aes(x = -log(ReturnPeriod), y = ReturnLevel, color = Type),size=1, alpha = 0.8) +
+  geom_point(data = emp_df_noPILFs, aes(x = -log(ReturnPeriod), y = ReturnLevel, color = Type),size=1, alpha = 0.8) +
+  scale_color_manual(
+  name = "Legend",
+  values = c("MLE" = "#31123b",
+              "MDPDE01" = "#62fa6b",
+              "MDPDE03" = "#277f8e",
+              "MLE_noPILFs" = "#1bd0d5",
+    "PILF" = "darkgoldenrod2",
+    "Normal" = "black",
+    "noPILF" = "#db5c68"
+  ),
+  labels = c(
+    "MLE" = "MLE",
+    "MDPDE01" = TeX("MDPDE ($\\alpha = 0.1$)"),
+    "MDPDE03" = TeX("MDPDE ($\\alpha = 0.3$)"),
+    "MLE_noPILFs" = "MLE (no PILFs)",
+    "PILF" = "PILF observations",
+    "Normal" = "Regular observations",
+    "noPILF" = "Regular observations (without PILFs)"
+  ),
+  breaks=c("MLE","MDPDE01","MDPDE03","MLE_noPILFs","PILF","Normal","noPILF"),
+  )+
+   scale_x_continuous(
+    breaks = c(-log(-log(1-1/1.01)),-log(-log(1-1/10)),-log(-log(1-1/50)),-log(-log(1-1/100))),
+      labels = c("1","10","50","100")
+    )+
+  labs(
+    title = paste0(sts_j),
+    x = "Return Period (years)",
+    y = TeX("Return Level ($m^3/s$)"),
+    color = ""
+  ) +
+  theme_minimal() +
+    theme(legend.position = "none",
+      #legend.position =c(.5, .5),
+          legend.title=element_text(size=30,face="bold"),
+          legend.text =element_text(size=28),
+          plot.title = element_text(hjust = 0.5,size = 30),
+          legend.key.height = unit(1.5, "cm"))+
+    theme(
+      axis.title = element_text(size = 28),   
+      axis.text = element_text(size = 18)
+    )+
+  guides(
+  color = guide_legend(order = 1, ncol = 1,override.aes = list(size = 4, linewidth = 2), keywidth = 3),
+  fill  = guide_legend(order = 2, ncol = 1,override.aes = list(size = 4, linewidth = 2), keywidth = 3)
+)
+
+plt
+```
+
+
+```{r}
+ggsave(plot = plt,
+       filename = paste0("figures/return_curve_log_",sts_j,".png"),
+       width = 1760 / 180,
+       height = 1060 / 180,
+       dpi = 180,
+       units = "in")
+
+```
+
+```{r}
+my_legend <- get_legend(plt)
+legend <- as_ggplot(my_legend)
+
+ggsave(plot = legend,
+       filename = "C:/Users/Nathan Huet/robust_gev/final_final_plots/real/final_figs/legend_return_curve.png",
+       width = 1760 / 180,
+       height = 1060 / 180,
+       dpi = 180,
+       units = "in")
+```
