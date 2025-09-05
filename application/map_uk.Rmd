@@ -2,13 +2,11 @@
 R code for plot of the UK map
 
 ```{r}
-
+rm(list=ls())
 library(sf)
 library(ggplot2)
 library(rnaturalearth)
 library(rnaturalearthdata)
-library(ggrepel)
-library(osmdata)
 
 ```
 
@@ -23,7 +21,7 @@ stations <- data.frame(
   lat = c(57.35, 51.1, 51.1, 53.4, 54.0),
   lon = c(-2.12, -4, -2.7, -2.17, -2.25),
   first_year = c(1939,1967,1965,1956,1970),
-  last_year = c(1939,2022,2023,2022,2022),
+  last_year = c(2023,2023,2023,2023,2023),
   pilf_prop = c(0.04, 0.09, 0.03, 0.07, 0.04),
   colors = c("#0d1687","#8b23a5","#db5c68","#f48848","#f0f920")
 )
