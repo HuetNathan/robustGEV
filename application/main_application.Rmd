@@ -465,7 +465,7 @@ my_legend <- get_legend(plt)
 legend <- as_ggplot(my_legend)
 
 ggsave(plot = legend,
-       filename = "C:/Users/Nathan Huet/robust_gev/final_final_plots/real/final_figs/legend_return_curve.png",
+       filename = "figures/legend_return_curve.png",
        width = 1760 / 180,
        height = 1060 / 180,
        dpi = 180,

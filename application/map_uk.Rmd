@@ -2,12 +2,13 @@
 R code for plot of the UK map
 
 ```{r}
-rm(list=ls())
+#rm(list=ls())
 library(sf)
 library(ggplot2)
 library(rnaturalearth)
 library(rnaturalearthdata)
-
+library(ggrepel)
+library(ggpubr)
 ```
 
 ```{r}
@@ -34,7 +35,7 @@ stations$legend_label <- paste0(
   " — ", "PILFs: ", stations$pilf_prop
 )
 
-ggplot(data = uk) +
+plt <- ggplot(data = uk) +
   geom_sf(fill = "antiquewhite") +
  geom_point(
   data = stations,
@@ -55,23 +56,26 @@ scale_color_manual(values = stations$colors)+
   ) +
   theme_minimal() +
   theme(legend.position = "right",
+    #legend.position = "none",
       legend.key.height = unit(0.8, "cm"), 
     legend.text = element_text(size = 14),
       axis.title = element_text(size = 14),
       axis.text = element_text(size = 12)
     )
+
+plt
 ```
 
-
 ```{r}
-ggsave(
-  filename = "figures/map_uk.png",
-  plot = last_plot(),
-  width = 1760 / 180,
-  height = 1060 / 180,
-  dpi = 180,
-  units = "in"
-)
+my_legend <- get_legend(plt)
+legend <- as_ggplot(my_legend)
+
+ggsave(plot = legend,
+       filename = "figures/legend_map_uk.png",
+       width = 1760 / 180,
+       height = 1060 / 180,
+       dpi = 180,
+       units = "in")
 ```
 
 

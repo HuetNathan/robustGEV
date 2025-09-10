@@ -41,7 +41,7 @@ generate_contaminated_gev <- function(n, epsilon, mu0, sig0, xi0, mu1, sig1, xi1
 }
 
 
-### MQ
+### Multi-Quantile Estimator (MQE) [Lin, S., Kong, A., Azencott, R., 2024]
 
 
 
@@ -161,7 +161,6 @@ set.seed(round(n + 42*(eps+xi0)))
 
 ### storage dataframe
 
-df_param <- data.frame()
 df_missing_value <- data.frame()
 df_wd <- data.frame()
 
@@ -194,20 +193,12 @@ for (xi1 in xi1_varying){
     fit_mle_succesful <- fit_mle[mle_is_successful]
     
     estimates_mle <- sapply(fit_mle_succesful, function(x) x$estimate)
-    
-    MLE_mse_list <- (estimates_mle - c(mu0,sig0,xi0))^2
-    MLE_mse <- rowMeans(MLE_mse_list)
-    MLE_se <- apply(MLE_mse_list, 1, function(x) sd(x)/sqrt(length(x)))
-    
+
     # Wasserstein distances
     
     wd_mle_list <- lapply(seq(sum(mle_is_successful)), function(i) wasserstein_for_gev(c(mu0,sig0,xi0),estimates_mle[,i],p,0.01))
     wd_mle <- mean(unlist(wd_mle_list))
     wd_mle_se <- sd(unlist(wd_mle_list))/sqrt(length(wd_mle_list))
-    
-    wd_ext_mle_list <- lapply(seq(sum(mle_is_successful)), function(i) wasserstein_for_gev(c(mu0,sig0,xi0),estimates_mle[,i],p,0.7))
-    wd_ext_mle <- mean(unlist(wd_ext_mle_list))
-    wd_ext_mle_se <- sd(unlist(wd_ext_mle_list))/sqrt(length(wd_ext_mle_list))
     
     ### MDPDE
     
@@ -224,19 +215,11 @@ for (xi1 in xi1_varying){
     
     estimates_mdpde_005 <- apply(fit_mdpde_005_succesful,2, function(x) x$par)
     
-    MDPDE_mse_list_005 <- (estimates_mdpde_005 - c(mu0,sig0,xi0))^2
-    MDPDE_mse_005 <- rowMeans(MDPDE_mse_list_005)
-    MDPDE_se_005 <- apply(MDPDE_mse_list_005, 1, function(x) sd(x)/sqrt(length(x)))
-    
     # Wasserstein distance
     
     wd_mdpde_list_005 <- lapply(seq(sum(mdpde_005_is_successful)), function(i) wasserstein_for_gev(c(mu0,sig0,xi0),estimates_mdpde_005[,i],p,0.01))
     wd_mdpde_005 <- mean(unlist(wd_mdpde_list_005))
     wd_mdpde_005_se <- sd(unlist(wd_mdpde_list_005))/sqrt(length(wd_mdpde_list_005))
-    
-    wd_ext_mdpde_list_005 <- lapply(seq(sum(mdpde_005_is_successful)), function(i) wasserstein_for_gev(c(mu0,sig0,xi0),estimates_mdpde_005[,i],p,0.7))
-    wd_ext_mdpde_005 <- mean(unlist(wd_ext_mdpde_list_005))
-    wd_ext_mdpde_005_se <- sd(unlist(wd_ext_mdpde_list_005))/sqrt(length(wd_ext_mdpde_list_005))
     
     ## alpha = 0.1
     
@@ -251,20 +234,11 @@ for (xi1 in xi1_varying){
     
     estimates_mdpde_01 <- apply(fit_mdpde_01_succesful,2, function(x) x$par)
     
-    MDPDE_mse_list_01 <- (estimates_mdpde_01 - c(mu0,sig0,xi0))^2
-    MDPDE_mse_01 <- rowMeans(MDPDE_mse_list_01)
-    MDPDE_se_01 <- apply(MDPDE_mse_list_01, 1, function(x) sd(x)/sqrt(length(x)))
-    
     # Wasserstein distance
     
     wd_mdpde_list_01 <- lapply(seq(sum(mdpde_01_is_successful)), function(i) wasserstein_for_gev(c(mu0,sig0,xi0),estimates_mdpde_01[,i],p,0.01))
     wd_mdpde_01 <- mean(unlist(wd_mdpde_list_01))
     wd_mdpde_01_se <- sd(unlist(wd_mdpde_list_01))/sqrt(length(wd_mdpde_list_01))
-    
-    wd_ext_mdpde_list_01 <- lapply(seq(sum(mdpde_01_is_successful)), function(i) wasserstein_for_gev(c(mu0,sig0,xi0),estimates_mdpde_01[,i],p,0.7))
-    wd_ext_mdpde_01 <- mean(unlist(wd_ext_mdpde_list_01))
-    wd_ext_mdpde_01_se <- sd(unlist(wd_ext_mdpde_list_01))/sqrt(length(wd_ext_mdpde_list_01))
-    
     
     ### MQE
     
@@ -273,20 +247,11 @@ for (xi1 in xi1_varying){
     mq_is_successful <- apply(fit_mq, 2, function(x) (x[1]<2 & x[2]<2 & x[1]>-2 & x[3]>-2))
     estimates_mq <- fit_mq[,mq_is_successful]
     
-    MQ_mse_list <- (estimates_mq - c(mu0,sig0,xi0))^2
-    MQ_mse <- rowMeans(MQ_mse_list)
-    MQ_se <- apply(MQ_mse_list, 1, function(x) sd(x)/sqrt(length(x)))
-    
     ### Wasserstein distance
     
     wd_mq_list <- lapply(seq(sum(mq_is_successful)), function(i) wasserstein_for_gev(c(mu0,sig0,xi0),estimates_mq[,i],p,0.01))
     wd_mq <- mean(unlist(wd_mq_list))
     wd_mq_se <- sd(unlist(wd_mq_list))/sqrt(length(wd_mq_list))
-    
-    wd_ext_mq_list <- lapply(seq(sum(mq_is_successful)), function(i) wasserstein_for_gev(c(mu0,sig0,xi0),estimates_mq[,i],p,0.7))
-    wd_ext_mq <- mean(unlist(wd_ext_mq_list))
-    wd_ext_mq_se <- sd(unlist(wd_ext_mq_list))/sqrt(length(wd_ext_mq_list))
-    
     
     ### RobExt
     
@@ -301,10 +266,6 @@ for (xi1 in xi1_varying){
     fit_OMSE_succesful <- fit_OMSE[OMSE_is_successful]
     
     estimates_OMSE <- sapply(fit_OMSE_succesful, function(x) x@estimate)
-    
-    OMSE_mse_list <- (estimates_OMSE - c(mu0,sig0,xi0))^2
-    OMSE_mse <- rowMeans(OMSE_mse_list)
-    OMSE_se <- apply(OMSE_mse_list, 1, function(x) sd(x)/sqrt(length(x)))
     
     # Wasserstein distances
     
@@ -324,10 +285,6 @@ for (xi1 in xi1_varying){
 
     estimates_RMXE <- sapply(fit_RMXE_succesful, function(x) x@estimate)
 
-    RMXE_mse_list <- (estimates_RMXE - c(mu0,sig0,xi0))^2
-    RMXE_mse <- rowMeans(RMXE_mse_list)
-    RMXE_se <- apply(RMXE_mse_list, 1, function(x) sd(x)/sqrt(length(x)))
-
     # Wasserstein distances
 
     wd_RMXE_list <- lapply(seq(sum(RMXE_is_successful)), function(i) wasserstein_for_gev(c(mu0,sig0,xi0),estimates_RMXE[,i],p,0.01))
@@ -335,63 +292,6 @@ for (xi1 in xi1_varying){
     wd_RMXE_se <- sd(unlist(wd_RMXE_list))/sqrt(length(wd_RMXE_list))
     
     ### storage
-    
-    # parameters
-    
-    new_row_param <- data.frame(
-      n = n,
-      eps = eps,
-      xi0 = xi0,
-      sig0 = sig0,
-      xi1 = xi1,
-      sig1 = sig1,
-      
-      MLE_mu_mse = signif(MLE_mse[[1]],digits = 3),
-      MLE_mu_se = signif(MLE_se[[1]],digits = 2),
-      MLE_sig_mse = signif(MLE_mse[[2]],digits = 3),
-      MLE_sig_se = signif(MLE_se[[2]],digits = 2),
-      MLE_xi_mse = signif(MLE_mse[[3]],digits = 3),
-      MLE_xi_se = signif(MLE_se[[3]],digits = 2),
-      
-      MDPDE_mu_mse_005 = signif(MDPDE_mse_005[[1]],digits = 3),
-      MDPDE_mu_se_005 = signif(MDPDE_mse_005[[1]],digits = 2),
-      MDPDE_sig_mse_005 = signif(MDPDE_mse_005[[2]],digits = 3),
-      MDPDE_sig_se_005 = signif(MDPDE_se_005[[2]],digits = 2),
-      MDPDE_xi_mse_005 = signif(MDPDE_mse_005[[3]],digits = 3),
-      MDPDE_xi_se_005 = signif(MDPDE_se_005[[3]],digits = 2),
-      
-      MDPDE_mu_mse_01 = signif(MDPDE_mse_01[[1]],digits = 3),
-      MDPDE_mu_se_01 = signif(MDPDE_mse_01[[1]],digits = 2),
-      MDPDE_sig_mse_01 = signif(MDPDE_mse_01[[2]],digits = 3),
-      MDPDE_sig_se_01 = signif(MDPDE_se_01[[2]],digits = 2),
-      MDPDE_xi_mse_01 = signif(MDPDE_mse_01[[3]],digits = 3),
-      MDPDE_xi_se_01 = signif(MDPDE_se_01[[3]],digits = 2),
-      
-      MQ_mu_mse = signif(MQ_mse[[1]],digits = 3),
-      MQ_mu_se = signif(MQ_se[[1]],digits = 2),
-      MQ_sig_mse = signif(MQ_mse[[2]],digits = 3),
-      MQ_sig_se = signif(MQ_se[[2]],digits = 2),
-      MQ_xi_mse = signif(MQ_mse[[3]],digits = 3),
-      MQ_xi_se = signif(MQ_se[[3]],digits = 2),
-      
-      OMSE_mu_mse = signif(OMSE_mse[[1]],digits = 3),
-      OMSE_mu_se = signif(OMSE_se[[1]],digits = 2),
-      OMSE_sig_mse = signif(OMSE_mse[[2]],digits = 3),
-      OMSE_sig_se = signif(OMSE_se[[2]],digits = 2),
-      OMSE_xi_mse = signif(OMSE_mse[[3]],digits = 3),
-      OMSE_xi_se = signif(OMSE_se[[3]],digits = 2),
-      
-      RMXE_mu_mse = signif(RMXE_mse[[1]],digits = 3),
-      RMXE_mu_se = signif(RMXE_se[[1]],digits = 2),
-      RMXE_sig_mse = signif(RMXE_mse[[2]],digits = 3),
-      RMXE_sig_se = signif(RMXE_se[[2]],digits = 2),
-      RMXE_xi_mse = signif(RMXE_mse[[3]],digits = 3),
-      RMXE_xi_se = signif(RMXE_se[[3]],digits = 2),
-      
-      stringsAsFactors = FALSE
-    )
-    
-    df_param <- rbind(df_param, new_row_param)
     
     # number of unplausible value
     
@@ -447,11 +347,9 @@ for (xi1 in xi1_varying){
   }
 }
 
-save(df_param,file=paste0("C:/Users/Nathan Huet/robust_gev/final_final_plots/simulation/datasets/df_param_n", df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_xi_eps", df_wd$eps[1]*100,".RData"))
+save(df_wd,file=paste0("generated_datasets/df_wd_n",df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_xi_eps", df_wd$eps[1]*100,".RData"))
 
-save(df_wd,file=paste0("C:/Users/Nathan Huet/robust_gev/final_final_plots/simulation/datasets/df_wd_n",df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_xi_eps", df_wd$eps[1]*100,".RData"))
-
-save(df_missing_value,file=paste0("C:/Users/Nathan Huet/robust_gev/final_final_plots/simulation/datasets/df_missing_n",df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_xi_eps", df_wd$eps[1]*100,".RData"))
+save(df_missing_value,file=paste0("generated_datasets/df_missing_n",df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_xi_eps", df_wd$eps[1]*100,".RData"))
 ```
 
 # for negative shape parameters (without comparison with RMXE and OMSE)
@@ -460,7 +358,6 @@ save(df_missing_value,file=paste0("C:/Users/Nathan Huet/robust_gev/final_final_p
 
 ### storage dataframe
 
-df_param <- data.frame()
 df_missing_value <- data.frame()
 df_wd <- data.frame()
 
@@ -494,19 +391,11 @@ for (xi1 in xi1_varying){
     
     estimates_mle <- sapply(fit_mle_succesful, function(x) x$estimate)
     
-    MLE_mse_list <- (estimates_mle - c(mu0,sig0,xi0))^2
-    MLE_mse <- rowMeans(MLE_mse_list)
-    MLE_se <- apply(MLE_mse_list, 1, function(x) sd(x)/sqrt(length(x)))
-    
     # Wasserstein distances
     
     wd_mle_list <- lapply(seq(sum(mle_is_successful)), function(i) wasserstein_for_gev(c(mu0,sig0,xi0),estimates_mle[,i],p,0.01))
     wd_mle <- mean(unlist(wd_mle_list))
     wd_mle_se <- sd(unlist(wd_mle_list))/sqrt(length(wd_mle_list))
-    
-    wd_ext_mle_list <- lapply(seq(sum(mle_is_successful)), function(i) wasserstein_for_gev(c(mu0,sig0,xi0),estimates_mle[,i],p,0.7))
-    wd_ext_mle <- mean(unlist(wd_ext_mle_list))
-    wd_ext_mle_se <- sd(unlist(wd_ext_mle_list))/sqrt(length(wd_ext_mle_list))
     
     ### MDPDE
     
@@ -523,19 +412,11 @@ for (xi1 in xi1_varying){
     
     estimates_mdpde_005 <- apply(fit_mdpde_005_succesful,2, function(x) x$par)
     
-    MDPDE_mse_list_005 <- (estimates_mdpde_005 - c(mu0,sig0,xi0))^2
-    MDPDE_mse_005 <- rowMeans(MDPDE_mse_list_005)
-    MDPDE_se_005 <- apply(MDPDE_mse_list_005, 1, function(x) sd(x)/sqrt(length(x)))
-    
     # Wasserstein distance
     
     wd_mdpde_list_005 <- lapply(seq(sum(mdpde_005_is_successful)), function(i) wasserstein_for_gev(c(mu0,sig0,xi0),estimates_mdpde_005[,i],p,0.01))
     wd_mdpde_005 <- mean(unlist(wd_mdpde_list_005))
     wd_mdpde_005_se <- sd(unlist(wd_mdpde_list_005))/sqrt(length(wd_mdpde_list_005))
-    
-    wd_ext_mdpde_list_005 <- lapply(seq(sum(mdpde_005_is_successful)), function(i) wasserstein_for_gev(c(mu0,sig0,xi0),estimates_mdpde_005[,i],p,0.7))
-    wd_ext_mdpde_005 <- mean(unlist(wd_ext_mdpde_list_005))
-    wd_ext_mdpde_005_se <- sd(unlist(wd_ext_mdpde_list_005))/sqrt(length(wd_ext_mdpde_list_005))
     
     ## alpha = 0.1
     
@@ -549,21 +430,12 @@ for (xi1 in xi1_varying){
     fit_mdpde_01_succesful <- fit_mdpde_01[,mdpde_01_is_successful]
     
     estimates_mdpde_01 <- apply(fit_mdpde_01_succesful,2, function(x) x$par)
-    
-    MDPDE_mse_list_01 <- (estimates_mdpde_01 - c(mu0,sig0,xi0))^2
-    MDPDE_mse_01 <- rowMeans(MDPDE_mse_list_01)
-    MDPDE_se_01 <- apply(MDPDE_mse_list_01, 1, function(x) sd(x)/sqrt(length(x)))
-    
+
     # Wasserstein distance
     
     wd_mdpde_list_01 <- lapply(seq(sum(mdpde_01_is_successful)), function(i) wasserstein_for_gev(c(mu0,sig0,xi0),estimates_mdpde_01[,i],p,0.01))
     wd_mdpde_01 <- mean(unlist(wd_mdpde_list_01))
     wd_mdpde_01_se <- sd(unlist(wd_mdpde_list_01))/sqrt(length(wd_mdpde_list_01))
-    
-    wd_ext_mdpde_list_01 <- lapply(seq(sum(mdpde_01_is_successful)), function(i) wasserstein_for_gev(c(mu0,sig0,xi0),estimates_mdpde_01[,i],p,0.7))
-    wd_ext_mdpde_01 <- mean(unlist(wd_ext_mdpde_list_01))
-    wd_ext_mdpde_01_se <- sd(unlist(wd_ext_mdpde_list_01))/sqrt(length(wd_ext_mdpde_list_01))
-    
     
     ### MQE
     
@@ -572,63 +444,13 @@ for (xi1 in xi1_varying){
     mq_is_successful <- apply(fit_mq, 2, function(x) (x[1]<2 & x[2]<2 & x[1]>-2 & x[3]>-2))
     estimates_mq <- fit_mq[,mq_is_successful]
     
-    MQ_mse_list <- (estimates_mq - c(mu0,sig0,xi0))^2
-    MQ_mse <- rowMeans(MQ_mse_list)
-    MQ_se <- apply(MQ_mse_list, 1, function(x) sd(x)/sqrt(length(x)))
-    
     ### Wasserstein distance
     
     wd_mq_list <- lapply(seq(sum(mq_is_successful)), function(i) wasserstein_for_gev(c(mu0,sig0,xi0),estimates_mq[,i],p,0.01))
     wd_mq <- mean(unlist(wd_mq_list))
     wd_mq_se <- sd(unlist(wd_mq_list))/sqrt(length(wd_mq_list))
     
-    wd_ext_mq_list <- lapply(seq(sum(mq_is_successful)), function(i) wasserstein_for_gev(c(mu0,sig0,xi0),estimates_mq[,i],p,0.7))
-    wd_ext_mq <- mean(unlist(wd_ext_mq_list))
-    wd_ext_mq_se <- sd(unlist(wd_ext_mq_list))/sqrt(length(wd_ext_mq_list))
-    
     ### storage
-    
-    # parameters
-    
-    new_row_param <- data.frame(
-      n = n,
-      eps = eps,
-      xi0 = xi0,
-      sig0 = sig0,
-      xi1 = xi1,
-      sig1 = sig1,
-      
-      MLE_mu_mse = signif(MLE_mse[[1]],digits = 3),
-      MLE_mu_se = signif(MLE_se[[1]],digits = 2),
-      MLE_sig_mse = signif(MLE_mse[[2]],digits = 3),
-      MLE_sig_se = signif(MLE_se[[2]],digits = 2),
-      MLE_xi_mse = signif(MLE_mse[[3]],digits = 3),
-      MLE_xi_se = signif(MLE_se[[3]],digits = 2),
-      
-      MDPDE_mu_mse_005 = signif(MDPDE_mse_005[[1]],digits = 3),
-      MDPDE_mu_se_005 = signif(MDPDE_mse_005[[1]],digits = 2),
-      MDPDE_sig_mse_005 = signif(MDPDE_mse_005[[2]],digits = 3),
-      MDPDE_sig_se_005 = signif(MDPDE_se_005[[2]],digits = 2),
-      MDPDE_xi_mse_005 = signif(MDPDE_mse_005[[3]],digits = 3),
-      MDPDE_xi_se_005 = signif(MDPDE_se_005[[3]],digits = 2),
-      
-      MDPDE_mu_mse_01 = signif(MDPDE_mse_01[[1]],digits = 3),
-      MDPDE_mu_se_01 = signif(MDPDE_mse_01[[1]],digits = 2),
-      MDPDE_sig_mse_01 = signif(MDPDE_mse_01[[2]],digits = 3),
-      MDPDE_sig_se_01 = signif(MDPDE_se_01[[2]],digits = 2),
-      MDPDE_xi_mse_01 = signif(MDPDE_mse_01[[3]],digits = 3),
-      MDPDE_xi_se_01 = signif(MDPDE_se_01[[3]],digits = 2),
-      
-      MQ_mu_mse = signif(MQ_mse[[1]],digits = 3),
-      MQ_mu_se = signif(MQ_se[[1]],digits = 2),
-      MQ_sig_mse = signif(MQ_mse[[2]],digits = 3),
-      MQ_sig_se = signif(MQ_se[[2]],digits = 2),
-      MQ_xi_mse = signif(MQ_mse[[3]],digits = 3),
-      MQ_xi_se = signif(MQ_se[[3]],digits = 2),
-      stringsAsFactors = FALSE
-    )
-    
-    df_param <- rbind(df_param, new_row_param)
     
     # number of unplausible value
     
@@ -677,8 +499,6 @@ for (xi1 in xi1_varying){
   }
 }
 
-save(df_param,file=paste0("generated_datasets/df_param_n", df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_xi_eps", df_wd$eps[1]*100,".RData"))
-
 save(df_wd,file=paste0("generated_datasets/df_wd_n",df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_xi_eps", df_wd$eps[1]*100,".RData"))
 
 save(df_missing_value,file=paste0("generated_datasets/df_missing_n",df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_xi_eps", df_wd$eps[1]*100,".RData"))
@@ -690,9 +510,9 @@ save(df_missing_value,file=paste0("generated_datasets/df_missing_n",df_wd$n[1],"
 
 # Plots with contamination on the shape parameter with positive true shape parameters (Figures 10,11,14,17, left)
 
-#load("generated_datasets/datasets/df_wd_n100_sign_xi1_varying_xi_eps10.RData")
+#load("generated_datasets/df_wd_n100_sign_xi1_varying_xi_eps20.RData")
 
-df_mse <-  data.frame(
+df_plot <-  data.frame(
   x = as.numeric(rep(df_wd$xi1, 6)),
   y = c(df_wd$wd_mle, df_wd$wd_mdpde_005, df_wd$wd_mdpde_01,df_wd$wd_mq,df_wd$wd_OMSE,df_wd$wd_RMXE),
   group = rep(c("MLE", "MDPDE005", "MDPDE01","MQE","OMSE","RMXE"), each = length(df_wd$wd_mle))
@@ -704,7 +524,7 @@ df_ci <- data.frame(
   group = rep(c("MLE", "MDPDE005", "MDPDE01","MQE","OMSE","RMXE"), each = length(df_wd$wd_mle))
 )
 
-df_plot <- df_mse
+
 df_plot$group <- factor(df_plot$group,
                         levels = c("MLE", "MDPDE005", "MDPDE01",
                                    "MQE", "OMSE", "RMXE"))
@@ -715,12 +535,12 @@ plt <- ggplot(df_plot, aes(x = x, y = y, color = group, shape = group)) +
   geom_line(linewidth = 1) +
   geom_errorbar(aes(ymin = y - se, ymax = y + se), width = 0.02) +
   geom_vline(xintercept = df_wd$xi0, linetype = "dashed", color = "grey24") +
-  labs(x = TeX("$\\xi_1$"), y = "MSE", color = "Models")+
+  labs(x = TeX("$\\xi_1$"), y = TeX("$W_2$"), color = "Models")+
   scale_x_continuous(
     breaks = c(-2,-1.5,-1, -0.5, 0, 0.3, 1,1.5,2),
     labels = c("-2","-1.5","-1","-0.3","0","0.3","1","1.5","2")
   )+
-  annotate("text", x = df_wd$xi0 + 0.1, y = 3*df_wd$wd_mq[15],
+  annotate("text", x = df_wd$xi0 + 0.1, y = 2*df_wd$wd_mq[15],
            label = TeX("$\\xi_0$"), color = 'grey24',size=6)+
   theme_minimal() +
   scale_colour_viridis_d(option = "turbo",
@@ -745,7 +565,7 @@ plt <- ggplot(df_plot, aes(x = x, y = y, color = group, shape = group)) +
   guides(
     color = guide_legend(order = 1, ncol = 1,override.aes = list(size = 4, linewidth = 2), keywidth = 3),
     fill  = guide_legend(order = 2, ncol = 1,override.aes = list(size = 4, linewidth = 2), keywidth = 3)
-  )
+  )#+ylim(0.55, 1.5)
 plt
 ```
 
@@ -765,9 +585,9 @@ ggsave(plot = plt,
 ```{r}
 # Plots with contamination on the scale parameter with positive true shape parameters (Figures 10,11,14,17, right)
 
-#load("generated_datasets/datasets/df_wd_n100_sign_xi1_varying_sig_eps10.RData")
+load("generated_datasets/df_wd_n100_sign_xi1_varying_sig_eps20.RData")
 
-df_mse <-  data.frame(
+df_plot <-  data.frame(
   x = rep(df_wd$sig1, 6),
   y = c(df_wd$wd_mle, df_wd$wd_mdpde_005, df_wd$wd_mdpde_01,df_wd$wd_mq,df_wd$wd_OMSE,df_wd$wd_RMXE),
   group = rep(c("MLE", "MDPDE005", "MDPDE01","MQE","OMSE","RMXE"), each = length(df_wd$wd_mle))
@@ -779,7 +599,7 @@ df_ci <- data.frame(
   group = rep(c("MLE", "MDPDE005", "MDPDE01","MQE","OMSE","RMXE"), each = length(df_wd$wd_mle))
 )
 
-df_plot <- df_mse
+
 df_plot$group <- factor(df_plot$group,
                         levels = c("MLE", "MDPDE005", "MDPDE01",
                                    "MQE", "OMSE", "RMXE"))
@@ -789,7 +609,7 @@ plt <- ggplot(df_plot, aes(x = x, y = y, color = group, shape = group)) +
   geom_line(linewidth = 1) +
   geom_errorbar(aes(ymin = y - se, ymax = y + se), width = 0.02) +
   geom_vline(xintercept = df_wd$sig0, linetype = "dashed", color = "grey24") +
-  labs(x = TeX("$\\sigma_1$"), y = "MSE", color = "Models")+
+  labs(x = TeX("$\\sigma_1$"), y = TeX("$W_2$"), color = "Models")+
   annotate("text", x = df_wd$sig0 - 0.1, y = 1.3*df_wd$wd_mq[10],
            label = TeX("$\\sigma_0$"), color = 'grey24',size=6)+
   theme_minimal() +
@@ -837,10 +657,10 @@ ggsave(plot = plt,
 # Plots with contamination on the shape parameter with negative true shape parameters (Figures 3,4,5,12,13,15,16,18,19 left)
 
 
-#load("C:/Users/Nathan Huet/robust_gev/final_final_plots/simulation/datasets/df_wd_n100_sign_xi0_varying_xi_eps02.RData")
+load("generated_datasets/df_wd_n50_sign_xi0_varying_xi_eps10.RData")
 
 
-df_mse <-  data.frame(
+df_plot <-  data.frame(
   x = as.numeric(rep(df_wd$xi1, 4)),
   y = c(df_wd$wd_mle, df_wd$wd_mdpde_005, df_wd$wd_mdpde_01,df_wd$wd_mq),
   group = rep(c("MLE", "MDPDE005", "MDPDE01","MQE"), each = length(df_wd$wd_mle))
@@ -852,7 +672,6 @@ df_ci <- data.frame(
   group = rep(c("MLE", "MDPDE005", "MDPDE01","MQE"), each = length(df_wd$wd_mle))
 )
 
-df_plot <- df_mse
 df_plot$se <- df_ci$y
 
 
@@ -860,12 +679,12 @@ plt <- ggplot(df_plot, aes(x = x, y = y, color = group, shape = group)) +
   geom_line(linewidth = 1) +
   geom_errorbar(aes(ymin = y - se, ymax = y + se), width = 0.02) +
   geom_vline(xintercept = df_wd$xi0, linetype = "dashed", color = "grey24") +
-  labs(x = TeX("$\\xi_1$"), y = "MSE", color = "Models")+
+  labs(x = TeX("$\\xi_1$"), y = TeX("$W_2$"), color = "Models")+
   scale_x_continuous(
     breaks = c(-2,-1.5,-1, -0.5, 0, 0.5, 1,1.5,2),
     labels = c("-2","-1.5","-1","-0.5","0","0.5","1","1.5","2")
   )+
-  annotate("text", x = df_wd$xi0 + 0.1, y = 3*df_wd$wd_mq[15],
+  annotate("text", x = df_wd$xi0 + 0.1, y = 1.5*df_wd$wd_mq[15],
            label = TeX("$\\xi_0$"), color = 'grey24',size=6)+
   theme_minimal() +
   scale_color_manual(
@@ -909,16 +728,14 @@ ggsave(plot = plt,
        units = "in")
 ```
 
-
-
 ```{r}
 
 # Plots with contamination on the scale parameter with negative true shape parameters (Figures 3,4,5,12,13,15,16,18,19 right)
 
 
-#load("C:/Users/Nathan Huet/robust_gev/final_final_plots/simulation/datasets/df_wd_n100_sign_xi0_varying_sig_eps02.RData")
+load("generated_datasets/df_wd_n100_sign_xi-1_varying_sig_eps20.RData")
 
-df_mse <-  data.frame(
+df_plot <-  data.frame(
   x = rep(df_wd$sig1, 4),
   y = c(df_wd$wd_mle, df_wd$wd_mdpde_005, df_wd$wd_mdpde_01,df_wd$wd_mq),
   group = rep(c("MLE", "MDPDE005", "MDPDE01","MQE"), each = length(df_wd$wd_mle))
@@ -930,7 +747,6 @@ df_ci <- data.frame(
   group = rep(c("MLE", "MDPDE005", "MDPDE01","MQE"), each = length(df_wd$wd_mle))
 )
 
-df_plot <- df_mse
 
 df_plot$se <- df_ci$y 
 
@@ -938,7 +754,7 @@ plt <- ggplot(df_plot, aes(x = x, y = y, color = group, shape = group)) +
   geom_line(linewidth = 1) +
   geom_errorbar(aes(ymin = y - se, ymax = y + se), width = 0.02) +
   geom_vline(xintercept = df_wd$sig0, linetype = "dashed", color = "grey24") +
-  labs(x = TeX("$\\sigma_1$"), y = "MSE", color = "Models")+
+  labs(x = TeX("$\\sigma_1$"), y = TeX("$W_2$"), color = "Models")+
   annotate("text", x = df_wd$sig0 - 0.1, y = 2*df_wd$wd_mq[10],
            label = TeX("$\\sigma_0$"), color = 'grey24',size=6)+
   theme_minimal() +
@@ -969,12 +785,14 @@ plt <- ggplot(df_plot, aes(x = x, y = y, color = group, shape = group)) +
     fill  = guide_legend(order = 2, ncol = 1,override.aes = list(size = 4, linewidth = 2), keywidth = 3)
   )
 plt
+
+
 ```
 
 
 ```{r}
 ggsave(plot = plt,
-       filename = paste0("datasets/supp_plot_n",
+       filename = paste0("figures/supp_plot_n",
                          df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_sig_eps", df_wd$eps[1]*100,".png"),
        width = 1760 / 180,
        height = 1060 / 180,
