@@ -22,12 +22,12 @@ load("NRFA_flow_dataset.Rdata")
 
 ```
 
-Stations : 69028 (PILFs = 5), 71011 (PILFs = 2), 52011 (PILFs = 2), 50014 (PILFs = 5), 10001 (PILFs = 2)
+Stations : 69028 (PILFs = 5), 71011 (PILFs = 2), 52011 (PILFs = 2) enlever cette station, 50014 (PILFs = 5), 10001 (PILFs = 2)
 
 ```{r}
 
-sts_j <- 69028
-klow <- 5
+sts_j <- 52011
+klow <- 2
 
 d <- winfapReader::get_amax(sts_j)
 
