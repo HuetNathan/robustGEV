@@ -15,6 +15,147 @@ source("C:/Users/huetn/Documents/github_repos/robustGEV/functions/asymptotic_var
 
 Plot asymptotic variances
 
+Location/scale parameters
+
+```{r}
+
+alphas <- c(0, 0.1, 0.3, 0.5, 1)
+
+mu <- 0
+sigma <- 1
+
+plot_data_loc <- data.frame()
+plot_data_scale <- data.frame() 
+
+for (alpha in alphas) {
+  print(alpha)
+  xi_min <- -(1 + alpha) / (2 + alpha)
+  
+  xi_vals <- seq(round(xi_min+0.01,2), 1, 0.01)
+  
+  y_loc <- sapply(xi_vals, function(xi)
+    {
+    print(xi)
+    asymptotic_variance_mdpde_componentwise(mu = mu,
+                                          sigma = sigma,
+                                          xi = xi,
+                                          alpha = alpha,
+                                          coord=c(1,1))
+    }
+    )
+  df_loc <- data.frame(x = xi_vals, y = y_loc, alpha = as.factor(alpha))
+  plot_data_loc <- rbind(plot_data_loc, df_loc)
+  
+  
+  
+  
+  y_scale <- sapply(xi_vals, function(xi)
+    {
+    print(xi)
+    asymptotic_variance_mdpde_componentwise(mu = mu,
+                                          sigma = sigma,
+                                          xi = xi,
+                                          alpha = alpha,
+                                          coord=c(2,2))
+    }
+    )
+  df_scale <- data.frame(x = xi_vals, y = y_scale, alpha = as.factor(alpha))
+  plot_data_scale <- rbind(plot_data_scale, df_scale)
+}
+
+```
+
+```{r}
+save(plot_data_loc,file=paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/generated_datasets/df_asymptotic_variance_mu.RData"))
+
+save(plot_data_scale,file=paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/generated_datasets/df_asymptotic_variance_sigma.RData"))
+
+
+plot_data_filtered_loc <- plot_data_loc[-c(683,689),]
+
+plot_data_loc_clean <- na.omit(plot_data_filtered_loc)
+
+plot_data_filtered_scale <- plot_data_scale[-c(683,689),]
+
+plot_data_scale_clean <- na.omit(plot_data_filtered_scale)
+```
+
+Plot asymptotic variance location 
+
+```{r}
+dev.off()
+plot_asymptotic_variance_mu <- ggplot(plot_data_loc_clean, aes(x = x, y = y, color = alpha)) +
+  geom_line(size = 1.2) +
+  theme_minimal() +
+    scale_colour_viridis_d(option = "plasma",
+                           name = expression(~~~~alpha))+
+  labs(
+    x = TeX("$\\xi$"),
+    y = "Variance"
+  )+
+  # scale_x_continuous(
+  #   breaks = list_quantile,
+  #   labels = p
+  # ) +
+  theme(legend.position ="none",
+        legend.title=element_text(size=26,face="bold"),
+        legend.text =element_text(size=24))+
+  theme(
+    axis.title = element_text(size = 24),   
+    axis.text = element_text(size = 18)
+  )
+plot_asymptotic_variance_mu
+```
+
+```{r}
+ggsave(plot = plot_asymptotic_variance_mu,
+       filename = paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/figures/asymptotic_variance_loc.png"),
+       width = 1760 / 180,
+       height = 1060 / 180,
+       dpi = 180,
+       units = "in")
+```
+
+
+Plot asymptotic variance scale 
+
+```{r}
+dev.off()
+plot_asymptotic_variance_sigma <- ggplot(plot_data_scale_clean, aes(x = x, y = y, color = alpha)) +
+  geom_line(size = 1.2) +
+  theme_minimal() +
+    scale_colour_viridis_d(option = "plasma",
+                           name = expression(~~~~alpha))+
+  labs(
+    x = TeX("$\\xi$"),
+    y = "Variance"
+  )+
+  # scale_x_continuous(
+  #   breaks = list_quantile,
+  #   labels = p
+  # ) +
+  theme(legend.position ="none",
+        legend.title=element_text(size=26,face="bold"),
+        legend.text =element_text(size=24))+
+  theme(
+    axis.title = element_text(size = 24),   
+    axis.text = element_text(size = 18)
+  )
+plot_asymptotic_variance_sigma
+```
+
+```{r}
+ggsave(plot = plot_asymptotic_variance_sigma,
+       filename = paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/figures/asymptotic_variance_sigma.png"),
+       width = 1760 / 180,
+       height = 1060 / 180,
+       dpi = 180,
+       units = "in")
+```
+
+
+Shape parameters
+
 ```{r}
 
 alphas <- c(0, 0.1, 0.3, 0.5, 1)
@@ -88,3 +229,7 @@ ggsave(plot = plot_asymptotic_variance,
        dpi = 180,
        units = "in")
 ```
+<<<<<<< HEAD
+=======
+
+>>>>>>> 36b82fffd13a7b97cb0a2f6ab686d8bb7c66fed9
