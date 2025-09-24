@@ -8,7 +8,9 @@ require(httr)
 library(ggplot2)
 library(evd)   
 library(dplyr)
-library(patchwork)  
+library(patchwork)
+
+source("asymptotic_variance.Rmd")
 
 ```
 
@@ -92,6 +94,12 @@ params_list <- list(
   MDPDE03   = param_mdpde03,
   MDPDE01   = param_mdpde01
   )
+```
+
+Asymptotic standard deviation of the parameters
+
+```{r}
+
 ```
 
 
