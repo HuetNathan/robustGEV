@@ -1,11 +1,9 @@
 R code for asymptotic variance of MDPDE and MLE
 
 ```{r}
-
+rm(list = ls())
 library(latex2exp)
 library(ggplot2)
-library(mev)
-library(matlib)
 library(MASS)
 
 options(scipen = 999)
@@ -15,7 +13,7 @@ source("C:/Users/huetn/Documents/github_repos/robustGEV/functions/asymptotic_var
 
 Plot asymptotic variances
 
-Location/scale parameters
+Shape parameter
 
 ```{r}
 
@@ -24,8 +22,7 @@ alphas <- c(0, 0.1, 0.3, 0.5, 1)
 mu <- 0
 sigma <- 1
 
-plot_data_loc <- data.frame()
-plot_data_scale <- data.frame() 
+plot_data_xi <- data.frame()
 
 for (alpha in alphas) {
   print(alpha)
@@ -33,58 +30,34 @@ for (alpha in alphas) {
   
   xi_vals <- seq(round(xi_min+0.01,2), 1, 0.01)
   
-  y_loc <- sapply(xi_vals, function(xi)
+  y <- sapply(xi_vals, function(xi)
     {
     print(xi)
     asymptotic_variance_mdpde_componentwise(mu = mu,
                                           sigma = sigma,
                                           xi = xi,
                                           alpha = alpha,
-                                          coord=c(1,1))
+                                          coord=c(3,3))
     }
     )
-  df_loc <- data.frame(x = xi_vals, y = y_loc, alpha = as.factor(alpha))
-  plot_data_loc <- rbind(plot_data_loc, df_loc)
-  
-  
-  
-  
-  y_scale <- sapply(xi_vals, function(xi)
-    {
-    print(xi)
-    asymptotic_variance_mdpde_componentwise(mu = mu,
-                                          sigma = sigma,
-                                          xi = xi,
-                                          alpha = alpha,
-                                          coord=c(2,2))
-    }
-    )
-  df_scale <- data.frame(x = xi_vals, y = y_scale, alpha = as.factor(alpha))
-  plot_data_scale <- rbind(plot_data_scale, df_scale)
+  df <- data.frame(x = xi_vals, y = y, alpha = as.factor(alpha))
+  plot_data_xi <- rbind(plot_data_xi, df)
 }
 
 ```
 
 ```{r}
-save(plot_data_loc,file=paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/generated_datasets/df_asymptotic_variance_mu.RData"))
+#save(plot_data_xi,file=paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_generated_datasets/df_asymptotic_variance_xi.RData"))
 
-save(plot_data_scale,file=paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/generated_datasets/df_asymptotic_variance_sigma.RData"))
+load(file=paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_generated_datasets/df_asymptotic_variance_xi.RData"))
 
+plot_data_xi_filtered <- plot_data_xi[-c(683,689),]
 
-plot_data_filtered_loc <- plot_data_loc[-c(683,689),]
-
-plot_data_loc_clean <- na.omit(plot_data_filtered_loc)
-
-plot_data_filtered_scale <- plot_data_scale[-c(683,689),]
-
-plot_data_scale_clean <- na.omit(plot_data_filtered_scale)
+plot_data_xi_clean <- na.omit(plot_data_xi_filtered)
 ```
 
-Plot asymptotic variance location 
-
 ```{r}
-dev.off()
-plot_asymptotic_variance_mu <- ggplot(plot_data_loc_clean, aes(x = x, y = y, color = alpha)) +
+plot_asymptotic_variance_xi <- ggplot(plot_data_xi_clean, aes(x = x, y = y, color = alpha)) +
   geom_line(size = 1.2) +
   theme_minimal() +
     scale_colour_viridis_d(option = "plasma",
@@ -97,30 +70,69 @@ plot_asymptotic_variance_mu <- ggplot(plot_data_loc_clean, aes(x = x, y = y, col
   #   breaks = list_quantile,
   #   labels = p
   # ) +
-  theme(legend.position ="none",
+  theme(legend.position =c(0.25,0.75),
         legend.title=element_text(size=26,face="bold"),
         legend.text =element_text(size=24))+
   theme(
     axis.title = element_text(size = 24),   
     axis.text = element_text(size = 18)
   )
-plot_asymptotic_variance_mu
+plot_asymptotic_variance_xi
 ```
 
 ```{r}
-ggsave(plot = plot_asymptotic_variance_mu,
-       filename = paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/figures/asymptotic_variance_loc.png"),
+ggsave(plot = plot_asymptotic_variance_xi,
+       filename = paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/figures/asymptotic_variance_xi.png"),
        width = 1760 / 180,
        height = 1060 / 180,
        dpi = 180,
        units = "in")
 ```
 
-
-Plot asymptotic variance scale 
+Scale parameter
 
 ```{r}
-dev.off()
+
+alphas <- c(0, 0.1, 0.3, 0.5, 1)
+
+mu <- 0
+sigma <- 1
+
+plot_data_scale <- data.frame()
+
+for (alpha in alphas) {
+  print(alpha)
+  xi_min <- -(1 + alpha) / (2 + alpha)
+  
+  xi_vals <- seq(round(xi_min+0.01,2), 1, 0.01)
+  
+  y <- sapply(xi_vals, function(xi)
+    {
+    print(xi)
+    asymptotic_variance_mdpde_componentwise(mu = mu,
+                                          sigma = sigma,
+                                          xi = xi,
+                                          alpha = alpha,
+                                          coord=c(2,2))
+    }
+    )
+  df <- data.frame(x = xi_vals, y = y, alpha = as.factor(alpha))
+  plot_data_scale <- rbind(plot_data_scale, df)
+}
+
+```
+
+```{r}
+#save(plot_data,file=paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_generated_datasets/df_asymptotic_variance_sigma.RData"))
+
+load(file="C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_generated_datasets/df_asymptotic_variance_sigma.RData")
+
+plot_data_scale_filtered <- plot_data_scale[-c(683,689),]
+
+plot_data_scale_clean <- na.omit(plot_data_scale_filtered)
+```
+
+```{r}
 plot_asymptotic_variance_sigma <- ggplot(plot_data_scale_clean, aes(x = x, y = y, color = alpha)) +
   geom_line(size = 1.2) +
   theme_minimal() +
@@ -146,15 +158,14 @@ plot_asymptotic_variance_sigma
 
 ```{r}
 ggsave(plot = plot_asymptotic_variance_sigma,
-       filename = paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/figures/asymptotic_variance_sigma.png"),
+       filename = paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_figures/asymptotic_variance_sigma.png"),
        width = 1760 / 180,
        height = 1060 / 180,
        dpi = 180,
        units = "in")
 ```
 
-
-Shape parameters
+Location parameter
 
 ```{r}
 
@@ -163,7 +174,7 @@ alphas <- c(0, 0.1, 0.3, 0.5, 1)
 mu <- 0
 sigma <- 1
 
-plot_data <- data.frame()
+plot_data_loc <- data.frame()
 
 for (alpha in alphas) {
   print(alpha)
@@ -178,27 +189,27 @@ for (alpha in alphas) {
                                           sigma = sigma,
                                           xi = xi,
                                           alpha = alpha,
-                                          coord=c(3,3))
+                                          coord=c(1,1))
     }
     )
   df <- data.frame(x = xi_vals, y = y, alpha = as.factor(alpha))
-  plot_data <- rbind(plot_data, df)
+  plot_data_loc <- rbind(plot_data_loc, df)
 }
 
 ```
 
 ```{r}
-save(plot_data,file=paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/generated_datasets/df_asymptotic_variance_xi.RData"))
+#save(plot_data,file=paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_generated_datasets/df_asymptotic_variance_sigma.RData"))
 
-plot_data_filtered <- plot_data[-c(683,689),]
+load(file="C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_generated_datasets/df_asymptotic_variance_mu.RData")
 
-plot_data_clean <- na.omit(plot_data_filtered)
+plot_data_loc_filtered <- plot_data_loc[-c(683,689),]
 
-
+plot_data_loc_clean <- na.omit(plot_data_loc_filtered)
 ```
 
 ```{r}
-plot_asymptotic_variance <- ggplot(plot_data_clean, aes(x = x, y = y, color = alpha)) +
+plot_asymptotic_variance_mu <- ggplot(plot_data_loc_clean, aes(x = x, y = y, color = alpha)) +
   geom_line(size = 1.2) +
   theme_minimal() +
     scale_colour_viridis_d(option = "plasma",
@@ -211,25 +222,21 @@ plot_asymptotic_variance <- ggplot(plot_data_clean, aes(x = x, y = y, color = al
   #   breaks = list_quantile,
   #   labels = p
   # ) +
-  theme(legend.position =c(0.25,0.75),
+  theme(legend.position ="none",
         legend.title=element_text(size=26,face="bold"),
         legend.text =element_text(size=24))+
   theme(
     axis.title = element_text(size = 24),   
     axis.text = element_text(size = 18)
   )
-plot_asymptotic_variance
+plot_asymptotic_variance_mu
 ```
 
 ```{r}
-ggsave(plot = plot_asymptotic_variance,
-       filename = paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/figures/asymptotic_variance_xi.png"),
+ggsave(plot = plot_asymptotic_variance_mu,
+       filename = paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_figures/asymptotic_variance_mu.png"),
        width = 1760 / 180,
        height = 1060 / 180,
        dpi = 180,
        units = "in")
 ```
-<<<<<<< HEAD
-=======
-
->>>>>>> 36b82fffd13a7b97cb0a2f6ab686d8bb7c66fed9

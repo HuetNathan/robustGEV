@@ -17,14 +17,14 @@ uk <- ne_countries(scale = "medium", country = "United Kingdom", returnclass = "
 
 ```{r}
 stations <- data.frame(
-  id = c("10001", "50014", "52011", "69028", "71011"),
-  river = c("Ythan River", "Yeo River", "Cary River", "Mersey River", "Ribble River"),
-  lat = c(57.35, 51.1, 51.1, 53.4, 54.0),
-  lon = c(-2.12, -4, -2.7, -2.17, -2.25),
-  first_year = c(1939,1967,1965,1956,1970),
-  last_year = c(2023,2023,2023,2023,2023),
-  pilf_prop = c(0.04, 0.09, 0.03, 0.07, 0.04),
-  colors = c("#0d1687","#8b23a5","#db5c68","#f48848","#f0f920")
+  id = c("10001", "50014", "69028", "71011"),
+  river = c("Ythan River", "Yeo River",  "Mersey River", "Ribble River"),
+  lat = c(57.35, 51.1,  53.4, 54.0),
+  lon = c(-2.12, -4,  -2.17, -2.25),
+  first_year = c(1939,1967,1955,1970),
+  last_year = c(1984,2023,2023,2023),
+  pilf_prop = c(0.04, 0.09, 0.07, 0.04),
+  colors = c("#0d1687","#db5c68","#f48848","#f0f920")
 )
 ```
 
@@ -67,16 +67,12 @@ plt
 ```
 
 ```{r}
-my_legend <- get_legend(plt)
-legend <- as_ggplot(my_legend)
-
-ggsave(plot = legend,
-       filename = "figures/legend_map_uk.png",
+ggsave(plot = plt,
+       filename = "C:/Users/huetn/Documents/github_repos/robustGEV/application/figures/map_uk.png",
        width = 1760 / 180,
        height = 1060 / 180,
        dpi = 180,
        units = "in")
 ```
-
 
 

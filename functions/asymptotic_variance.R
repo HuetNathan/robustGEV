@@ -1,11 +1,7 @@
-library(latex2exp)
-library(ggplot2)
 library(mev)
-library(matlib)
 library(MASS)
 
 options(scipen = 999)
-
 
 ### Score functions of the GEV ###
 
@@ -16,11 +12,11 @@ S_mu <- Vectorize(function(x, mu, sigma, xi) {
   z <- (x - mu) / sigma
   term <- 1 + xi * z
   
-  if (abs(xi) >= 0.01){
+  if (abs(xi) >= 0.02){
     result <- (1 / sigma) * (term)^(-1) * (xi + 1 - term^(-1 / xi))
   }
   
-  if (abs(xi) < 0.01){
+  if (abs(xi) < 0.02){
     result <- (1 / sigma) * (1-exp(-z))
   }
   
@@ -34,11 +30,11 @@ S_sigma <- Vectorize(function(x, mu, sigma, xi) {
   z <- (x - mu) / sigma
   term <- 1 + xi * z
   
-  if (abs(xi) >= 0.01){
+  if (abs(xi) >= 0.02){
     result <- -1 / sigma + (x - mu) / sigma^2 * (term)^(-1) * ((xi + 1) - term^(-1 / xi))
   }
   
-  if (abs(xi) < 0.01){
+  if (abs(xi) < 0.02){
     result <- (1 / sigma) *(-1 + z*(1-exp(-z)))
   }
   
@@ -52,7 +48,7 @@ S_xi <- Vectorize(function(x, mu, sigma, xi) {
   z <- (x - mu) / sigma
   term <- 1 + xi * z
   
-  if (abs(xi) >= 0.01){
+  if (abs(xi) >= 0.02){
     
     part1 <- (1/xi^2)*log(term)*(1-term^(-1/xi))
     
@@ -64,7 +60,7 @@ S_xi <- Vectorize(function(x, mu, sigma, xi) {
     
   }
   
-  if (abs(xi) < 0.01){
+  if (abs(xi) < 0.02){
     
     result <- (1/2)*z^2*(1-exp(-z))-z
     
@@ -97,10 +93,10 @@ J_alpha <- function(mu, sigma, xi, alpha){
   
   J <- matrix(nrow = 3, ncol = 3)
   
-  if (xi >= 0.01){
+  if (xi >= 0.02){
     lower <- mu - sigma/xi+0.001
     upper <- mu+100
-  } else if (abs(xi) < 0.01){
+  } else if (abs(xi) < 0.02){
     lower <- mu-100
     upper <- mu+100
   } else {
@@ -145,10 +141,10 @@ U_alpha <- function(mu, sigma, xi, alpha){
   
   U <- numeric(3)
   
-  if (xi >= 0.01){
+  if (xi >= 0.02){
     lower <- mu - sigma/xi+0.001
     upper <- mu+100
-  } else if (abs(xi) < 0.01){
+  } else if (abs(xi) < 0.02){
     lower <- mu-100
     upper <- mu+100
   } else {

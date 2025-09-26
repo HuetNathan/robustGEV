@@ -10,7 +10,7 @@ library(evd)
 library(dplyr)
 library(patchwork)
 
-source("asymptotic_variance.Rmd")
+source("C:/Users/huetn/Documents/github_repos/robustGEV/functions/asymptotic_variance.R")
 
 ```
 
@@ -24,11 +24,11 @@ load("NRFA_flow_dataset.Rdata")
 
 ```
 
-Stations : 69028 (PILFs = 5), 71011 (PILFs = 2), 52011 (PILFs = 2) enlever cette station, 50014 (PILFs = 5), 10001 (PILFs = 2)
+Stations : 69028 (PILFs = 5), 71011 (PILFs = 2), 50014 (PILFs = 5), 10001 (PILFs = 2)
 
 ```{r}
 
-sts_j <- 52011
+sts_j <- 71011
 klow <- 2
 
 d <- winfapReader::get_amax(sts_j)
@@ -67,12 +67,18 @@ fit_pwme <- EnvStats::egevd(data,method = "pwme")
 fit_mle <- mev::fit.gev(data)
 param_mle <- fit_mle$estimate
 
+n <- length(data)
+
+sd_mle <- sqrt(asymptotic_variance_mdpde(param_mle[1],param_mle[2],param_mle[3],alpha =0)[c(1,5,9)])/n^(1/2)
+
 # fit mdpde alpha = 0.1
 
 fit_mdpde_01 <- optim(par = estimates_pwme, fn = H_alpha, data = data,
           alpha = 0.1,method = "L-BFGS-B",lower = c(-Inf,0.0001,-5),upper = c(Inf,Inf,5),control=list(maxit=2000))
 
 param_mdpde01 <- fit_mdpde_01$par
+
+sd_mdpde01 <- sqrt(asymptotic_variance_mdpde(param_mdpde01[1],param_mdpde01[2],param_mdpde01[3],alpha =0.1)[c(1,5,9)])/n^(1/2)
 
 # fit mdpde alpha = 0.3
 
@@ -81,10 +87,14 @@ fit_mdpde_03 <- optim(par = estimates_pwme, fn = H_alpha, data = data,
 
 param_mdpde03 <- fit_mdpde_03$par
 
+sd_mdpde03 <- sqrt(asymptotic_variance_mdpde(param_mdpde03[1],param_mdpde03[2],param_mdpde03[3],alpha =0.3)[c(1,5,9)])/n^(1/2)
+
 # fit mle on the dataset without the PILFs
 
 fit_mle_noPILFs <- mev::fit.gev(data_noPILFs)
 param_mle_noPILFs <- fit_mle_noPILFs$estimate
+
+sd_mle_noPILFs <- sqrt(asymptotic_variance_mdpde(param_mle_noPILFs[1],param_mle_noPILFs[2],param_mle_noPILFs[3],alpha = 0)[c(1,5,9)])/length(data_noPILFs)^(1/2)
 
 # param list
 
@@ -94,11 +104,15 @@ params_list <- list(
   MDPDE03   = param_mdpde03,
   MDPDE01   = param_mdpde01
   )
-```
 
-Asymptotic standard deviation of the parameters
+# asymptotic standard deviation
 
-```{r}
+sd_list <- list(
+  MLE_noPILFs = sd_mle_noPILFs,
+  MLE         = sd_mle,
+  MDPDE01   = sd_mdpde01,
+  MDPDE03   = sd_mdpde03
+  )
 
 ```
 
@@ -132,9 +146,9 @@ wasserstein_for_gev <- function(true_param,esti_param,p,tau) {
 # wasserstein's distance w.r.t. MLE without PILFs (Table 2)
 
 wasserstein_list <- list(
-  MLE       = wasserstein_for_gev(params_list$MLE_noPILFs,params_list$MLE,2,0.01),
-  MDPDE01   = wasserstein_for_gev(params_list$MLE_noPILFs,params_list$MDPDE01,2,0.01),
-  MDPDE03   = wasserstein_for_gev(params_list$MLE_noPILFs,params_list$MDPDE03,2,0.01)
+  MLE       = wasserstein_for_gev(params_list$MLE_noPILFs,params_list$MLE,1,0.01),
+  MDPDE01   = wasserstein_for_gev(params_list$MLE_noPILFs,params_list$MDPDE01,1,0.01),
+  MDPDE03   = wasserstein_for_gev(params_list$MLE_noPILFs,params_list$MDPDE03,1,0.01)
   )
 
 
