@@ -51,7 +51,7 @@ for (alpha in alphas) {
 
 load(file=paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_generated_datasets/df_asymptotic_variance_xi.RData"))
 
-plot_data_xi_filtered <- plot_data_xi[-c(683,689),]
+plot_data_xi_filtered <- plot_data[-c(683,689),]
 
 plot_data_xi_clean <- na.omit(plot_data_xi_filtered)
 ```
@@ -60,11 +60,16 @@ plot_data_xi_clean <- na.omit(plot_data_xi_filtered)
 plot_asymptotic_variance_xi <- ggplot(plot_data_xi_clean, aes(x = x, y = y, color = alpha)) +
   geom_line(size = 1.2) +
   theme_minimal() +
-    scale_colour_viridis_d(option = "plasma",
-                           name = expression(~~~~alpha))+
+    scale_color_manual(
+      values = c("0" = "#1b1a81",
+                 "0.1" = "#7c2f9f",
+                 "0.3" = "#c54ba0",
+                 "0.5" = "#f3904e",
+                 "1" = "#d1d84d"),
+      name = expression(~~~~alpha))+
   labs(
     x = TeX("$\\xi$"),
-    y = "Variance"
+    y = "Asympt. Var. (shape)"
   )+
   # scale_x_continuous(
   #   breaks = list_quantile,
@@ -82,7 +87,7 @@ plot_asymptotic_variance_xi
 
 ```{r}
 ggsave(plot = plot_asymptotic_variance_xi,
-       filename = paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/figures/asymptotic_variance_xi.png"),
+       filename = paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_figures/asymptotic_variance_xi.png"),
        width = 1760 / 180,
        height = 1060 / 180,
        dpi = 180,
@@ -136,11 +141,16 @@ plot_data_scale_clean <- na.omit(plot_data_scale_filtered)
 plot_asymptotic_variance_sigma <- ggplot(plot_data_scale_clean, aes(x = x, y = y, color = alpha)) +
   geom_line(size = 1.2) +
   theme_minimal() +
-    scale_colour_viridis_d(option = "plasma",
-                           name = expression(~~~~alpha))+
+    scale_color_manual(
+      values = c("0" = "#1b1a81",
+                 "0.1" = "#7c2f9f",
+                 "0.3" = "#c54ba0",
+                 "0.5" = "#f3904e",
+                 "1" = "#d1d84d"),
+      name = expression(~~~~alpha))+
   labs(
     x = TeX("$\\xi$"),
-    y = "Variance"
+    y = "Asympt. Var. (scale)"
   )+
   # scale_x_continuous(
   #   breaks = list_quantile,
@@ -212,11 +222,16 @@ plot_data_loc_clean <- na.omit(plot_data_loc_filtered)
 plot_asymptotic_variance_mu <- ggplot(plot_data_loc_clean, aes(x = x, y = y, color = alpha)) +
   geom_line(size = 1.2) +
   theme_minimal() +
-    scale_colour_viridis_d(option = "plasma",
-                           name = expression(~~~~alpha))+
+    scale_color_manual(
+      values = c("0" = "#1b1a81",
+                 "0.1" = "#7c2f9f",
+                 "0.3" = "#c54ba0",
+                 "0.5" = "#f3904e",
+                 "1" = "#d1d84d"),
+      name = expression(~~~~alpha))+
   labs(
     x = TeX("$\\xi$"),
-    y = "Variance"
+    y = "Asympt. Var. (location)"
   )+
   # scale_x_continuous(
   #   breaks = list_quantile,

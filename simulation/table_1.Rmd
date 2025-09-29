@@ -1,0 +1,181 @@
+
+```{r}
+
+library(mev)
+library(RobExtremes)
+library(ROptEst)
+library(latex2exp)
+library(ggplot2)
+library(EnvStats)
+
+library(tidyverse)
+
+library(evd)
+library(scales)
+library(extRemes)
+library(texmex)
+library(fExtremes)
+library(pracma)
+library(xtable)
+
+
+library(LMoFit)
+
+```
+
+
+```{r}
+
+### the contaminated samples
+
+generate_contaminated_gev <- function(n, epsilon, mu0, sig0, xi0, mu1, sig1, xi1) {
+  n_clean <- round((1 - epsilon) * n)
+  n_contam <- n - n_clean
+  
+  X_clean <- mev::rgev(n_clean, loc = mu0, scale = sig0, shape = xi0)
+  X_contam <- mev::rgev(n_contam, loc = mu1, scale = sig1, shape = xi1)
+  
+  return(sample(c(X_clean, X_contam)))
+}
+
+
+### MDPDE (minimization of H_\alpha)
+
+H_alpha <- function(data,par,alpha) {
+  
+  cste <- (1/par[2]^alpha)*(1/(1+alpha))^(alpha*(1+par[3])+1)*gamma((alpha*(1+par[3])+1))
+  
+  sum <- (1+1/alpha)*mean(mev::dgev(data,par[1],par[2],par[3])^alpha)
+  
+  return(cste - sum)
+}
+
+
+#### Wasserstein distance
+
+wasserstein_for_gev <- function(true_param,esti_param,p,tau) {
+  
+  true_mu <- true_param[1]
+  true_sig <- true_param[2]
+  true_xi <- true_param[3]
+  
+  esti_mu <- esti_param[1]
+  esti_sig <- esti_param[2]
+  esti_xi <- esti_param[3]
+  
+  u <- seq(tau,0.99,0.01)
+  
+  true_quantiles <- mev::qgev(u,true_mu,true_sig,true_xi)
+  esti_quantiles <- mev::qgev(u,esti_mu,esti_sig,esti_xi)
+  
+  wd <- ((1/length(u))*sum(abs(true_quantiles-esti_quantiles)^p))^(1/p)
+  
+  return(wd)
+}
+
+```
+
+```{r}
+
+### Parameters
+
+n = 100
+d = 200
+
+mu0 = 0
+sig0 = 1
+
+xi0_varying = seq(-0.4,0.8,0.2)
+
+alpha_varying = c(0.02,0.05,0.1,0.15,seq(0.2,0.8,0.1))
+
+p = 1
+
+```
+
+```{r}
+
+### storage dataframe
+
+df_ratio <- data.frame()
+ 
+cpt <- 0
+
+for (xi0 in xi0_varying){
+  for (alpha in alpha_varying){
+    cpt <- cpt +1
+    print(cpt)  
+    
+    ### generation of the contaminated sample
+    
+    data <- replicate(d,mev::rgev(n, loc = mu0, scale = sig0, shape = xi0))
+    df_data <- as.data.frame(data)
+    
+    ## initial values
+    
+    fit_pwme <- lapply(df_data, EnvStats::egevd,method = "pwme")
+    estimates_pwme <- sapply(seq_along(fit_pwme), function(i) c(fit_pwme[[i]]$parameters[1],
+                                                                fit_pwme[[i]]$parameters[2],
+                                                                -fit_pwme[[i]]$parameters[3]))
+    
+    ### MLE
+    
+    fit_mle <- lapply(df_data, function(x) tryCatch(mev::fit.gev(x),error = function(e) NULL))
+    
+    # to assess the performance, we keep only the "plausible" estimates
+    
+    mle_is_successful <- sapply(fit_mle, function(x) if (is.null(x)){F} else{x$convergence == "successful" & x$estimate[1]<2 & x$estimate[2]<2 & x$estimate[3]<1 & x$estimate[1]>-2 & x$estimate[3]>-1})
+    fit_mle_succesful <- fit_mle[mle_is_successful]
+    
+    estimates_mle <- sapply(fit_mle_succesful, function(x) x$estimate)
+
+    # Wasserstein distances
+    
+    wd_mle_list <- lapply(seq(sum(mle_is_successful)), function(i) wasserstein_for_gev(c(mu0,sig0,xi0),estimates_mle[,i],p,0.01))
+    wd_mle <- mean(unlist(wd_mle_list))
+    
+    ### MDPDE
+
+    
+    fit_mdpde <- sapply(seq_along(seq_along(fit_pwme)), function(i) {
+      optim(par = estimates_pwme[,i], fn = H_alpha, data = data[,i],
+            alpha = alpha,method = "L-BFGS-B",lower = c(-Inf,0.0001,-2),upper = c(Inf,Inf,2),
+            control=list(maxit=2000))
+    })
+    
+    mdpde_is_successful <- apply(fit_mdpde,2, function(x) (x$convergence == 0 & x$par[1]<2 & x$par[2]<2 & x$par[1]>-2 ))
+    fit_mdpde_succesful <- fit_mdpde[,mdpde_is_successful]
+    
+    estimates_mdpde <- apply(fit_mdpde_succesful,2, function(x) x$par)
+    
+    # Wasserstein distance
+    
+    wd_mdpde_list <- lapply(seq(sum(mdpde_is_successful)), function(i) wasserstein_for_gev(c(mu0,sig0,xi0),estimates_mdpde[,i],p,0.01))
+    wd_mdpde <- mean(unlist(wd_mdpde_list))
+    
+    ### storage
+    
+    ratio <- wd_mle/wd_mdpde
+    
+    
+    # number of unplausible value
+    
+    new_row <- data.frame(
+      n = n,
+      mu0 = mu0,
+      sig0 = sig0,
+      
+      xi0 = xi0,
+      alpha = alpha,
+      
+      ratio = ratio,
+      
+      stringsAsFactors = FALSE
+    )
+    
+    df_ratio <- rbind(df_ratio, new_row)
+  }
+}
+
+```
+
