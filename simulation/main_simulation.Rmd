@@ -124,10 +124,10 @@ wasserstein_for_gev <- function(true_param,esti_param,p,tau) {
 
 ### Parameters
 
-n = 100
+n = 50
 d = 200
 
-eps = 0.2
+eps = 0.05
 
 mu0 = 0
 sig0 = 1
@@ -135,11 +135,11 @@ xi0 = 0.1
 
 mu1 = 0
 
-sig1_varying = seq(0.5,3,0.1)
-xi1_varying = c(0.1)
+# sig1_varying = seq(0.5,3,0.1)
+# xi1_varying = c(0.1)
 
-# sig1_varying = c(1)
-# xi1_varying = c(seq(-1.5,0.9,0.1),0.99)
+sig1_varying = c(1)
+xi1_varying = c(seq(-1.5,0.9,0.1),0.99)
 
 q1 = 0.1
 
@@ -375,9 +375,9 @@ for (xi1 in xi1_varying){
 
 
 ```{r}
-save(df_wd,file=paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/new_generated_datasets/supp_df_wd_n",df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_sig_eps", df_wd$eps[1]*100,".RData"))
+save(df_wd,file=paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/new_generated_datasets/supp_df_wd_n",df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_xi_eps", df_wd$eps[1]*100,".RData"))
 
-save(df_missing_value,file=paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/new_generated_datasets/supp_df_missing_n",df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_sig_eps", df_wd$eps[1]*100,".RData"))
+save(df_missing_value,file=paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/new_generated_datasets/supp_df_missing_n",df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_xi_eps", df_wd$eps[1]*100,".RData"))
 ```
 
 
@@ -417,7 +417,7 @@ plt <- ggplot(df_plot, aes(x = x, y = y, color = group, shape = group)) +
     breaks = c(-1.5,-1, -0.5, 0.1,0.5, 1),
     labels = c("-1.5","-1","-0.5","0.1","0.5","1")
   )+
-  annotate("text", x = df_wd$xi0 + 0.1, y = 1.3*df_wd$wd_mq[15],
+  annotate("text", x = df_wd$xi0 + 0.1, y = 1.1*df_wd$wd_mq[15],
            label = TeX("$\\xi_0$"), color = 'grey24',size=6)+
   theme_minimal() +
   scale_color_manual(
@@ -453,6 +453,7 @@ plt <- ggplot(df_plot, aes(x = x, y = y, color = group, shape = group)) +
     fill  = guide_legend(order = 2, ncol = 1,override.aes = list(size = 4, linewidth = 2), keywidth = 3)
   )#+ylim(0.55, 1.5)
 plt
+
 ```
 
 
@@ -496,7 +497,7 @@ plt <- ggplot(df_plot, aes(x = x, y = y, color = group, shape = group)) +
   geom_errorbar(aes(ymin = y - se, ymax = y + se), width = 0.02) +
   geom_vline(xintercept = df_wd$sig0, linetype = "dashed", color = "grey24") +
   labs(x = TeX("$\\sigma_1$"), y = TeX("$W_1$"), color = "Models")+
-  annotate("text", x = df_wd$sig0 - 0.1, y = 1.2*df_wd$wd_mq[10],
+  annotate("text", x = df_wd$sig0 - 0.1, y = 1.1*df_wd$wd_mq[5],
            label = TeX("$\\sigma_0$"), color = 'grey24',size=6)+
   theme_minimal() +
   scale_x_continuous(
@@ -563,20 +564,23 @@ ggsave(plot = plt,
 
 ### Parameters
 
-n = 100
+n = 50
 d = 200
 
 eps = 0.1
 
 mu0 = 0
 sig0 = 1
-xi0 = -0.1
+xi0 = 0
 
 mu1 = 0
-sig1_varying = seq(0.5,3,0.1)
-#sig1_varying = c(1)
-#xi1_varying = c(seq(-1.5,0.9,0.1),0.99)
-xi1_varying = c(-0.1)
+
+# sig1_varying = seq(0.5,3,0.1)
+# xi1_varying = c(0)
+
+sig1_varying = c(1)
+xi1_varying = c(seq(-1.5,0.9,0.1),0.99)
+
 q1 = 0.1
 
 if (xi0 > 0.05) {
@@ -798,10 +802,10 @@ plt <- ggplot(df_plot, aes(x = x, y = y, color = group, shape = group)) +
   geom_vline(xintercept = df_wd$xi0, linetype = "dashed", color = "grey24") +
   labs(x = TeX("$\\xi_1$"), y = TeX("$W_1$"), color = "Models")+
   scale_x_continuous(
-    breaks = c(-2,-1.5,-1, -0.5, -0.1,0.5, 1,1.5,2),
-    labels = c("-2","-1.5","-1","-0.5","-0.1","0.5","1","1.5","2")
+    breaks = c(-2,-1.5,-1, -0.5, 0,0.5, 1,1.5,2),
+    labels = c("-2","-1.5","-1","-0.5","0","0.5","1","1.5","2")
   )+
-  annotate("text", x = df_wd$xi0 + 0.1, y = 1.3*df_wd$wd_mq[15],
+  annotate("text", x = df_wd$xi0 + 0.1, y = 1.2*df_wd$wd_mq[15],
            label = TeX("$\\xi_0$"), color = 'grey24',size=6)+
   theme_minimal() +
   scale_color_manual(
@@ -838,7 +842,7 @@ plt
 
 ```{r}
 ggsave(plot = plt,
-       filename = paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/new_figures/plot_n",
+       filename = paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/new_figures/supp_plot_n",
                          df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_xi_eps", df_wd$eps[1]*100,".png"),
        width = 1760 / 180,
        height = 1060 / 180,
@@ -873,7 +877,7 @@ plt <- ggplot(df_plot, aes(x = x, y = y, color = group, shape = group)) +
   geom_errorbar(aes(ymin = y - se, ymax = y + se), width = 0.02) +
   geom_vline(xintercept = df_wd$sig0, linetype = "dashed", color = "grey24") +
   labs(x = TeX("$\\sigma_1$"), y = TeX("$W_1$"))+
-  annotate("text", x = df_wd$sig0 - 0.1, y = 1.5*df_wd$wd_mq[10],
+  annotate("text", x = df_wd$sig0 - 0.1, y = 1.5*df_wd$wd_mq[5],
            label = TeX("$\\sigma_0$"), color = 'grey24',size=6)+
   theme_minimal()+
   scale_x_continuous(
@@ -916,7 +920,7 @@ plt
 
 ```{r}
 ggsave(plot = plt,
-       filename = paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/new_figures/plot_n",
+       filename = paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/new_figures/supp_plot_n",
                          df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_sig_eps", df_wd$eps[1]*100,".png"),
        width = 1760 / 180,
        height = 1060 / 180,
