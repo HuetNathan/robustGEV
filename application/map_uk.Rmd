@@ -68,7 +68,7 @@ plt
 
 ```{r}
 ggsave(plot = plt,
-       filename = "C:/Users/huetn/Documents/github_repos/robustGEV/application/figures/map_uk.png",
+       filename = "/application/figures/map_uk.png",
        width = 1760 / 180,
        height = 1060 / 180,
        dpi = 180,

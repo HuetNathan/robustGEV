@@ -8,7 +8,7 @@ library(MASS)
 
 options(scipen = 999)
 
-source("C:/Users/huetn/Documents/github_repos/robustGEV/functions/asymptotic_variance.R")
+source("/functions/asymptotic_variance.R")
 ```
 
 Plot asymptotic variances
@@ -47,9 +47,9 @@ for (alpha in alphas) {
 ```
 
 ```{r}
-#save(plot_data_xi,file=paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_generated_datasets/df_asymptotic_variance_xi.RData"))
+#save(plot_data_xi,file=paste0("/simulation/new_generated_datasets/df_asymptotic_variance_xi.RData"))
 
-load(file=paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_generated_datasets/df_asymptotic_variance_xi.RData"))
+load(file=paste0("/simulation/generated_datasets/df_asymptotic_variance_xi.RData"))
 
 plot_data_xi_filtered <- plot_data[-c(683,689),]
 
@@ -87,7 +87,7 @@ plot_asymptotic_variance_xi
 
 ```{r}
 ggsave(plot = plot_asymptotic_variance_xi,
-       filename = paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_figures/asymptotic_variance_xi.png"),
+       filename = paste0("/simulation/figures/asymptotic_variance_xi.png"),
        width = 1760 / 180,
        height = 1060 / 180,
        dpi = 180,
@@ -128,9 +128,9 @@ for (alpha in alphas) {
 ```
 
 ```{r}
-#save(plot_data,file=paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_generated_datasets/df_asymptotic_variance_sigma.RData"))
+#save(plot_data,file=paste0("/simulation/new_generated_datasets/df_asymptotic_variance_sigma.RData"))
 
-load(file="C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_generated_datasets/df_asymptotic_variance_sigma.RData")
+load(file="/simulation/generated_datasets/df_asymptotic_variance_sigma.RData")
 
 plot_data_scale_filtered <- plot_data_scale[-c(683,689),]
 
@@ -168,7 +168,7 @@ plot_asymptotic_variance_sigma
 
 ```{r}
 ggsave(plot = plot_asymptotic_variance_sigma,
-       filename = paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_figures/asymptotic_variance_sigma.png"),
+       filename = paste0("/simulation/figures/asymptotic_variance_sigma.png"),
        width = 1760 / 180,
        height = 1060 / 180,
        dpi = 180,
@@ -209,9 +209,9 @@ for (alpha in alphas) {
 ```
 
 ```{r}
-#save(plot_data,file=paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_generated_datasets/df_asymptotic_variance_sigma.RData"))
+#save(plot_data,file=paste0("/simulation/generated_datasets/df_asymptotic_variance_sigma.RData"))
 
-load(file="C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_generated_datasets/df_asymptotic_variance_mu.RData")
+load(file="/simulation/generated_datasets/df_asymptotic_variance_mu.RData")
 
 plot_data_loc_filtered <- plot_data_loc[-c(683,689),]
 
@@ -249,7 +249,7 @@ plot_asymptotic_variance_mu
 
 ```{r}
 ggsave(plot = plot_asymptotic_variance_mu,
-       filename = paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_figures/asymptotic_variance_mu.png"),
+       filename = paste0("/simulation/figures/asymptotic_variance_mu.png"),
        width = 1760 / 180,
        height = 1060 / 180,
        dpi = 180,

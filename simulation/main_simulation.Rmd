@@ -375,9 +375,9 @@ for (xi1 in xi1_varying){
 
 
 ```{r}
-save(df_wd,file=paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/new_generated_datasets/supp_df_wd_n",df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_xi_eps", df_wd$eps[1]*100,".RData"))
+save(df_wd,file=paste0("/simulation/generated_datasets/supp_df_wd_n",df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_xi_eps", df_wd$eps[1]*100,".RData"))
 
-save(df_missing_value,file=paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/new_generated_datasets/supp_df_missing_n",df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_xi_eps", df_wd$eps[1]*100,".RData"))
+save(df_missing_value,file=paste0("/simulation/generated_datasets/supp_df_missing_n",df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_xi_eps", df_wd$eps[1]*100,".RData"))
 ```
 
 
@@ -459,7 +459,7 @@ plt
 
 ```{r}
 ggsave(plot = plt,
-       filename = paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/new_figures/supp_plot_n",
+       filename = paste0("/simulation/figures/supp_plot_n",
                          df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_xi_eps", df_wd$eps[1]*100,".png"),
        width = 1760 / 180,
        height = 1060 / 180,
@@ -472,7 +472,7 @@ ggsave(plot = plt,
 ```{r}
 # Plots with contamination on the scale parameter with positive true shape parameters (Figures 10,11,14,17, right)
 
-#load("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/new_generated_datasets/df_wd_n100_sign_xi1_varying_sig_eps20.RData")
+#load("/simulation/generated_datasets/df_wd_n100_sign_xi1_varying_sig_eps20.RData")
 
 df_plot <-  data.frame(
   x = rep(df_wd$sig1, 7),
@@ -542,7 +542,7 @@ plt
 
 ```{r}
 ggsave(plot = plt,
-       filename = paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/new_figures/supp_plot_n",
+       filename = paste0("/simulation/figures/supp_plot_n",
                          df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_sig_eps", df_wd$eps[1]*100,".png"),
        width = 1760 / 180,
        height = 1060 / 180,
@@ -765,9 +765,9 @@ for (xi1 in xi1_varying){
     df_wd <- rbind(df_wd, new_row_wd)
   }
 }
-save(df_wd,file=paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/new_generated_datasets/df_wd_n",df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_xi_eps", df_wd$eps[1]*100,".RData"))
+save(df_wd,file=paste0("/simulation/generated_datasets/df_wd_n",df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_xi_eps", df_wd$eps[1]*100,".RData"))
 
-save(df_missing_value,file=paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/new_generated_datasets/df_missing_n",df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_xi_eps", df_wd$eps[1]*100,".RData"))
+save(df_missing_value,file=paste0("/simulation/generated_datasets/df_missing_n",df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_xi_eps", df_wd$eps[1]*100,".RData"))
 ```
 
 plots
@@ -779,7 +779,7 @@ plots
 # Plots with contamination on the shape parameter with negative true shape parameters (Figures 3,4,5,12,13,15,16,18,19 left)
 
 
-#load("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/new_generated_datasets/df_wd_n100_sign_xi1_varying_xi_eps10.RData")
+#load("/simulation/generated_datasets/df_wd_n100_sign_xi1_varying_xi_eps10.RData")
 
 df_plot <-  data.frame(
   x = as.numeric(rep(df_wd$xi1, 5)),
@@ -842,7 +842,7 @@ plt
 
 ```{r}
 ggsave(plot = plt,
-       filename = paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/new_figures/supp_plot_n",
+       filename = paste0("/simulation/figures/supp_plot_n",
                          df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_xi_eps", df_wd$eps[1]*100,".png"),
        width = 1760 / 180,
        height = 1060 / 180,
@@ -920,11 +920,117 @@ plt
 
 ```{r}
 ggsave(plot = plt,
-       filename = paste0("C:/Users/Nathan Huet/github_repos/robustGEV/simulation/new_figures/supp_plot_n",
+       filename = paste0("/simulation/figures/supp_plot_n",
                          df_wd$n[1],"_sign_xi",sign(df_wd$xi0[1]) ,"_varying_sig_eps", df_wd$eps[1]*100,".png"),
        width = 1760 / 180,
        height = 1060 / 180,
        dpi = 180,
        units = "in")
+```
+
+Code table 1
+
+```{r}
+
+### Parameters
+
+n = 100
+d = 200
+
+mu0 = 0
+sig0 = 1
+
+xi0_varying = seq(-0.4,0.8,0.2)
+
+alpha_varying = c(0.02,0.05,0.1,0.15,seq(0.2,0.8,0.1))
+
+p = 1
+
+```
+
+```{r}
+
+### storage dataframe
+
+df_ratio <- data.frame()
+ 
+cpt <- 0
+
+for (xi0 in xi0_varying){
+  for (alpha in alpha_varying){
+    cpt <- cpt +1
+    print(cpt)  
+    
+    ### generation of the contaminated sample
+    
+    data <- replicate(d,mev::rgev(n, loc = mu0, scale = sig0, shape = xi0))
+    df_data <- as.data.frame(data)
+    
+    ## initial values
+    
+    fit_pwme <- lapply(df_data, EnvStats::egevd,method = "pwme")
+    estimates_pwme <- sapply(seq_along(fit_pwme), function(i) c(fit_pwme[[i]]$parameters[1],
+                                                                fit_pwme[[i]]$parameters[2],
+                                                                -fit_pwme[[i]]$parameters[3]))
+    
+    ### MLE
+    
+    fit_mle <- lapply(df_data, function(x) tryCatch(mev::fit.gev(x),error = function(e) NULL))
+    
+    # to assess the performance, we keep only the "plausible" estimates
+    
+    mle_is_successful <- sapply(fit_mle, function(x) if (is.null(x)){F} else{x$convergence == "successful" & x$estimate[1]<2 & x$estimate[2]<2 & x$estimate[3]<1 & x$estimate[1]>-2 & x$estimate[3]>-1})
+    fit_mle_succesful <- fit_mle[mle_is_successful]
+    
+    estimates_mle <- sapply(fit_mle_succesful, function(x) x$estimate)
+
+    # Wasserstein distances
+    
+    wd_mle_list <- lapply(seq(sum(mle_is_successful)), function(i) wasserstein_for_gev(c(mu0,sig0,xi0),estimates_mle[,i],p,0.01))
+    wd_mle <- mean(unlist(wd_mle_list))
+    
+    ### MDPDE
+
+    
+    fit_mdpde <- sapply(seq_along(seq_along(fit_pwme)), function(i) {
+      optim(par = estimates_pwme[,i], fn = H_alpha, data = data[,i],
+            alpha = alpha,method = "L-BFGS-B",lower = c(-Inf,0.0001,-2),upper = c(Inf,Inf,2),
+            control=list(maxit=2000))
+    })
+    
+    mdpde_is_successful <- apply(fit_mdpde,2, function(x) (x$convergence == 0 & x$par[1]<2 & x$par[2]<2 & x$par[1]>-2 ))
+    fit_mdpde_succesful <- fit_mdpde[,mdpde_is_successful]
+    
+    estimates_mdpde <- apply(fit_mdpde_succesful,2, function(x) x$par)
+    
+    # Wasserstein distance
+    
+    wd_mdpde_list <- lapply(seq(sum(mdpde_is_successful)), function(i) wasserstein_for_gev(c(mu0,sig0,xi0),estimates_mdpde[,i],p,0.01))
+    wd_mdpde <- mean(unlist(wd_mdpde_list))
+    
+    ### storage
+    
+    ratio <- wd_mle/wd_mdpde
+    
+    
+    # number of unplausible value
+    
+    new_row <- data.frame(
+      n = n,
+      mu0 = mu0,
+      sig0 = sig0,
+      
+      xi0 = xi0,
+      alpha = alpha,
+      
+      ratio = ratio,
+      
+      stringsAsFactors = FALSE
+    )
+    
+    df_ratio <- rbind(df_ratio, new_row)
+  }
+}
+
 ```
 

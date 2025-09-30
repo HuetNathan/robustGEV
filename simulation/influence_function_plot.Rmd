@@ -7,7 +7,7 @@ library(latex2exp)
 library(ggplot2)
 library(mev)
 
-source("C:/Users/huetn/Documents/github_repos/robustGEV/functions/influence_function.R")
+source("/functions/influence_function.R")
 
 ```
 
@@ -69,7 +69,7 @@ plot_if
 
 ```{r}
 ggsave(plot = plot_if,
-       filename = paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_figures/IF_mu_positive_xi.png"),
+       filename = paste0("/simulation/figures/IF_mu_positive_xi.png"),
        width = 1760 / 180,
        height = 1060 / 180,
        dpi = 180,
@@ -124,7 +124,7 @@ plot_if
 
 ```{r}
 ggsave(plot = plot_if,
-       filename = paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_figures/IF_sig_positive_xi.png"),
+       filename = paste0("/simulation/figures/IF_sig_positive_xi.png"),
        width = 1760 / 180,
        height = 1060 / 180,
        dpi = 180,
@@ -167,7 +167,7 @@ plot_if <- ggplot(plot_data, aes(x = x, y = y, color = alpha)) +
     breaks = list_quantile,
     labels = p
   ) +
-  #scale_y_log10() +  # <-- log scale for y-axis
+  #scale_y_log10() +
   theme(
     legend.position = c(.7, .3),
     legend.title = element_text(size = 26, face = "bold"),
@@ -180,7 +180,7 @@ plot_if
 
 ```{r}
 ggsave(plot = plot_if,
-       filename = paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_figures/IF_xi_positive_xi.png"),
+       filename = paste0("/simulation/figures/IF_xi_positive_xi.png"),
        width = 1760 / 180,
        height = 1060 / 180,
        dpi = 180,
@@ -246,7 +246,7 @@ plot_if
 
 ```{r}
 ggsave(plot = plot_if,
-       filename = paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_figures/IF_mu_negative_xi.png"),
+       filename = paste0("/simulation/figures/IF_mu_negative_xi.png"),
        width = 1760 / 180,
        height = 1060 / 180,
        dpi = 180,
@@ -301,7 +301,7 @@ plot_if
 
 ```{r}
 ggsave(plot = plot_if,
-       filename = paste0("C:/Users/huetn/Documents/github_repos/robustGEV/simulation/new_figures/IF_sig_negative_xi.png"),
+       filename = paste0("/simulation/figures/IF_sig_negative_xi.png"),
        width = 1760 / 180,
        height = 1060 / 180,
        dpi = 180,

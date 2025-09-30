@@ -10,7 +10,7 @@ library(evd)
 library(dplyr)
 library(patchwork)
 
-source("C:/Users/huetn/Documents/github_repos/robustGEV/functions/asymptotic_variance.R")
+source("/functions/asymptotic_variance.R")
 
 ```
 
